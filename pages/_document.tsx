@@ -37,3 +37,5 @@ MyDocument.getInitialProps = async ctx => {
 		styles: [...React.Children.toArray(initialProps.styles), sheets.getStyleElement()]
 	};
 }
+
+export default MyDocument;
