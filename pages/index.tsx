@@ -1,6 +1,6 @@
+import { useUser } from "@auth0/nextjs-auth0";
 import { Box, Button, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import React from "react";
-import { useUser } from "../src/auth/fetchUser";
 
 const useStyles = makeStyles(theme => ({
 	tableContainer: {
@@ -10,15 +10,17 @@ const useStyles = makeStyles(theme => ({
 	table: {
 		width: "650px"
 	}
-}))
+}));
+
+console.log("test2");
 
 const Index = () => {
-	const { data, error } = useUser();
+	const { user, error, isLoading } = useUser();
 	const classes = useStyles();
+	if(isLoading) return "loading..."
 	if(error) return String(error);
-	if(data === null)
+	if(!user)
 		return <Box m={2}><Button href="/api/auth/login" variant="contained">Login</Button></Box>
-	if(!data) return "loading..."
 	return (
 		<>
 			<TableContainer component={Paper} className={classes.tableContainer}>
@@ -28,10 +30,10 @@ const Index = () => {
 						<TableCell>Value</TableCell>
 					</TableHead>
 					<TableBody>
-					{Object.keys(data).map((key, i) => (
+					{Object.keys(user).map((key, i) => (
 						<TableRow key={i}>
 							<TableCell>{key}</TableCell>
-							<TableCell>{String(data[key])}</TableCell>
+							<TableCell>{String(user[key])}</TableCell>
 						</TableRow>
 					))}
 					</TableBody>

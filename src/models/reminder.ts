@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import CollectionModel, { CollectionDocument } from "./collection";
+import CategoryModel, { CategoryDocument } from "./collection";
 
 export interface Reminder {
 	owner: string,
@@ -10,7 +10,7 @@ export interface Reminder {
 	dueAt: Date,
 	wholeDay: boolean,
 	notificationOffsets: number[],
-	collection?: mongoose.Types.ObjectId
+	category?: mongoose.Types.ObjectId
 }
 
 const ReminderSchema = new mongoose.Schema<Reminder>({
@@ -20,29 +20,46 @@ const ReminderSchema = new mongoose.Schema<Reminder>({
 	dueAt: {type: Date, required: true},
 	wholeDay: {type: Boolean, default: false},
 	notificationOffsets: {type: [Number], default: []},
-	collection: mongoose.Types.ObjectId
+	category: mongoose.Types.ObjectId
 }, {timestamps: true});
 
 
 interface ReminderMethods {
-	findParentCollection: () => Promise<CollectionDocument | null>,
-	findRootCollection: () => Promise<CollectionDocument | null>
+	findCategory: () => Promise<CategoryDocument | null>,
 }
 
 ReminderSchema.method({
-	async findParentCollection(): Promise<CollectionDocument | null> {
-		const collectionId = this.get("collection");
+	async findCategory(): Promise<CategoryDocument | null> {
+		const collectionId = this.get("category");
 		if(!collectionId) return null;
-		return CollectionModel.findById(collectionId).exec();
+		return CategoryModel.findById(collectionId).exec();
 	},
-	async findRootCollection(): Promise<CollectionDocument | null> {
-		const parentCollection = await (this as ReminderDocument).findParentCollection();
-		if(!parentCollection) return null;
-		return parentCollection.findRootCollection();
-	}
-})
+});
 
-const ReminderModel = mongoose.model<Reminder, mongoose.Model<Reminder, {}, ReminderMethods>>("reminder", ReminderSchema);
+interface ReminderQueryHelpers {
+	before(date: Date | null): mongoose.QueryWithHelpers<any, ReminderDocument, ReminderQueryHelpers>,
+	after(date: Date | null): mongoose.QueryWithHelpers<any, ReminderDocument, ReminderQueryHelpers>
+}
+
+ReminderSchema.query.before = function(date) {
+	if(!date) return this;
+	return this.find({
+		"dueAt": {
+			"$lte": date
+		}
+	});
+}
+
+ReminderSchema.query.after = function(date) {
+	if(!date) return this;
+	return this.find({
+		"dueAt": {
+			"$gte": date
+		}
+	});
+}
+
+const ReminderModel = mongoose.model<Reminder, mongoose.Model<Reminder, ReminderQueryHelpers, ReminderMethods>>("reminder", ReminderSchema);
 
 export type ReminderDocument = InstanceType<typeof ReminderModel>
 
