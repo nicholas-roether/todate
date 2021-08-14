@@ -3,7 +3,7 @@ export interface UserInit {
 	readonly name: string;
 	readonly picture: string;
 	readonly updatedAt: Date;
-	readonly sub: string;
+	readonly id: string;
 }
 
 class User implements UserInit {
@@ -11,18 +11,18 @@ class User implements UserInit {
 	public readonly name: string;
 	public readonly picture: string;
 	public readonly updatedAt: Date;
-	public readonly sub: string;
+	public readonly id: string;
 
 	constructor(init: UserInit) {
 		this.nickname = init.nickname;
 		this.name = init.name;
 		this.picture = init.picture;
 		this.updatedAt = init.updatedAt;
-		this.sub = init.sub;
+		this.id = init.id;
 	}
 
 	public toJson(): string {
-		const { nickname, name, picture, updatedAt, sub } = this;
+		const { nickname, name, picture, updatedAt, id: sub } = this;
 		return JSON.stringify({nickname, name, picture, updatedAt: updatedAt.toISOString(), sub});
 	}
 
@@ -33,7 +33,7 @@ class User implements UserInit {
 			name: obj.name,
 			picture: obj.picture,
 			updatedAt: obj.updated_at ? new Date(obj.updated_at) : undefined,
-			sub: obj.sub
+			id: obj.sub
 		}
 
 		const error = new Error("Tried to decode an invalid user object");
@@ -50,7 +50,7 @@ class User implements UserInit {
 			&& "name" 		in obj && typeof (obj as any).name 		== "string"
 			&& "picture"	in obj && typeof (obj as any).picture 	== "string"
 			&& "updatedAt"	in obj && (obj as any).updatedAt 		instanceof Date
-			&& "sub"		in obj && typeof (obj as any).sub		== "string";
+			&& "sub"		in obj && typeof (obj as any).id		== "string";
 	}
 }
 
