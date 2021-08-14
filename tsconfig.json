@@ -21,10 +21,11 @@
 	"include": [
 		"next-env.d.ts",
 		"**/*.ts",
-		"**/*.tsx"
+		"**/*.tsx", 
+		"next.config.js"	
 	],
 	"exclude": [
 		".yarn",
-	".pnp.*"
+		".pnp.*"
 	]
 }
