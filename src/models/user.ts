@@ -1,3 +1,5 @@
+import { Session } from "@auth0/nextjs-auth0";
+
 export interface UserInit {
 	readonly nickname: string;
 	readonly name: string;
@@ -21,6 +23,10 @@ class User implements UserInit {
 		this.id = init.id;
 	}
 
+	public idMatches(id: string) {
+		return id == this.id;
+	}
+
 	public toJson(): string {
 		const { nickname, name, picture, updatedAt, id: sub } = this;
 		return JSON.stringify({nickname, name, picture, updatedAt: updatedAt.toISOString(), sub});
@@ -38,11 +44,14 @@ class User implements UserInit {
 
 		const error = new Error("Tried to decode an invalid user object");
 		if(!this.isValidUser(user)) {
-			console.log("test");
 			throw error;
 		}
 		
 		return new User(user);
+	}
+
+	public static fromSession(session: Session) {
+		return this.fromJson(session.user);
 	}
 
 	private static isValidUser(obj: object): obj is UserInit {
@@ -50,7 +59,7 @@ class User implements UserInit {
 			&& "name" 		in obj && typeof (obj as any).name 		== "string"
 			&& "picture"	in obj && typeof (obj as any).picture 	== "string"
 			&& "updatedAt"	in obj && (obj as any).updatedAt 		instanceof Date
-			&& "sub"		in obj && typeof (obj as any).id		== "string";
+			&& "id"			in obj && typeof (obj as any).id		== "string";
 	}
 }
 

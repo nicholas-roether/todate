@@ -12,8 +12,6 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
-console.log("test2");
-
 const Index = () => {
 	const { user, error, isLoading } = useUser();
 	const classes = useStyles();

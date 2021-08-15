@@ -1,32 +1,36 @@
 import * as mongoose from "mongoose";
+import Database from "../db";
 import ReminderModel, { ReminderDocument } from "./reminder";
 
 export interface Category {
 	owner: string,
 	name: string,
 	// TODO convert to enum
-	icon: string
+	icon: string,
+	expandByDefault: boolean
 }
 
 const CategorySchema = new mongoose.Schema<Category>({
 	owner: {type: String, required: true},
 	name: {type: String, default: "Unnamed Collection"},
-	icon: String
+	icon: String,
+	expandByDefault: {type: Boolean, default: true}
 });
 
 
-interface CategoryMethods {
+export interface CategoryMethods {
 	findReminders: (from?: Date, to?: Date) => Promise<ReminderDocument[]>
 }
 
 CategorySchema.method({
 	async findReminders(from?: Date, to?: Date): Promise<ReminderDocument[]> {
-		return ReminderModel.find({"category": this._id}).after(from).before(to).exec();
+		const db = await Database.get();
+		return db.Reminder.find({"category": this._id}).after(from).before(to).exec();
 	}
 });
 
-const CategoryModel = mongoose.model<Category, mongoose.Model<Category, {}, CategoryMethods>>("collection", CategorySchema);
+export type CategoryModelType = mongoose.Model<Category, {}, CategoryMethods>
 
-export type CategoryDocument = InstanceType<typeof CategoryModel>;
+export type CategoryDocument = InstanceType<CategoryModelType>;
 
-export default CategoryModel;
+export default CategorySchema;

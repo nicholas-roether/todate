@@ -1,5 +1,6 @@
 import * as mongoose from "mongoose";
-import CategoryModel, { CategoryDocument } from "./collection";
+import Database from "../db";
+import CategoryModel, { CategoryDocument } from "./category";
 
 export interface Reminder {
 	owner: string,
@@ -24,19 +25,20 @@ const ReminderSchema = new mongoose.Schema<Reminder>({
 }, {timestamps: true});
 
 
-interface ReminderMethods {
+export interface ReminderMethods {
 	findCategory: () => Promise<CategoryDocument | null>,
 }
 
 ReminderSchema.method({
 	async findCategory(): Promise<CategoryDocument | null> {
+		const db = await Database.get();
 		const collectionId = this.get("category");
 		if(!collectionId) return null;
-		return CategoryModel.findById(collectionId).exec();
+		return db.Category.findById(collectionId).exec();
 	},
 });
 
-interface ReminderQueryHelpers {
+export interface ReminderQueryHelpers {
 	before(date: Date | null): mongoose.QueryWithHelpers<any, ReminderDocument, ReminderQueryHelpers>,
 	after(date: Date | null): mongoose.QueryWithHelpers<any, ReminderDocument, ReminderQueryHelpers>
 }
@@ -59,8 +61,8 @@ ReminderSchema.query.after = function(date) {
 	});
 }
 
-const ReminderModel = mongoose.model<Reminder, mongoose.Model<Reminder, ReminderQueryHelpers, ReminderMethods>>("reminder", ReminderSchema);
+export type ReminderModelType = mongoose.Model<Reminder, ReminderQueryHelpers, ReminderMethods>;
 
-export type ReminderDocument = InstanceType<typeof ReminderModel>
+export type ReminderDocument = InstanceType<ReminderModelType>
 
-export default ReminderModel;
+export default ReminderSchema;
