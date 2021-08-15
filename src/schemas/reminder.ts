@@ -9,6 +9,7 @@ export interface Reminder {
 	createdAt: Date,
 	updatedAt: Date,
 	dueAt: Date,
+	duration?: number,
 	wholeDay: boolean,
 	notificationOffsets: number[],
 	category?: mongoose.Types.ObjectId
@@ -19,6 +20,7 @@ const ReminderSchema = new mongoose.Schema<Reminder>({
 	title: {type: String, default: "Untitled Reminder"},
 	description: {type: String, default: ""},
 	dueAt: {type: Date, required: true},
+	duration: {type: Number, default: 0},
 	wholeDay: {type: Boolean, default: false},
 	notificationOffsets: {type: [Number], default: []},
 	category: mongoose.Types.ObjectId

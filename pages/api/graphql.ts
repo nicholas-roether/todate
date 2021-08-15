@@ -16,6 +16,7 @@ const typeDefs = gql`
 		updatedAt: String!
 		createdAt: String!
 		dueAt: String!
+		duration: Number!
 		wholeDay: Boolean!
 		notificationOffsets: [Int!]!
 		category: Category
@@ -70,6 +71,7 @@ function docToReminder(doc: ReminderDocument, fieldNodes?: ReadonlyArray<FieldNo
 		updatedAt: (doc.get("updatedAt") as Date).toISOString(),
 		createdAt: (doc.get("createdAt") as Date).toISOString(),
 		dueAt: (doc.get("dueAt") as Date).toISOString(),
+		duration: doc.get("duration"),
 		wholeDay: doc.get("wholeDay"),
 		notificationOffsets: doc.get("notificationOffsets")
 	}
@@ -106,7 +108,7 @@ const resolvers = {
 			const db = await Database.get();
 			const fromDate = new Date(from);
 			const toDate = new Date(to);
-			
+
 			let userData: {[key: string]: any} = {};
 			if(fieldNodesInclude(fieldNodes, "categories"))
 				userData.categories = await db.Category.find({ owner: user.id }).exec().then(docs => Promise.all(docs.map(doc => docToCategory(doc, null, fromDate, toDate))));
