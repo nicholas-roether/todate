@@ -1,6 +1,6 @@
 import * as mongoose from "mongoose";
 import Database from "../db";
-import CategoryModel, { CategoryDocument } from "./category";
+import { CategoryDocument } from "./category";
 
 export interface Reminder {
 	owner: string,
@@ -48,17 +48,19 @@ export interface ReminderQueryHelpers {
 ReminderSchema.query.before = function(date) {
 	if(!date) return this;
 	return this.find({
-		"dueAt": {
-			"$lte": date
+		dueAt: {
+			$lte: date
 		}
 	});
 }
 
 ReminderSchema.query.after = function(date) {
 	if(!date) return this;
+	const duration = this.duration ?? 0;
+	date = new Date(date.getTime() + duration);
 	return this.find({
-		"dueAt": {
-			"$gte": date
+		dueAt: {
+			$gte: date
 		}
 	});
 }

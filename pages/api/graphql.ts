@@ -1,22 +1,26 @@
 import { getSession } from "@auth0/nextjs-auth0";
-import { gql, ApolloServer } from "apollo-server-micro";
+import { ApolloServer } from "apollo-server-micro";
 import { FieldNode } from "graphql";
+import gql from "graphql-tag";
 import { NextApiHandler } from "next";
 import NextCors from "nextjs-cors";
 import Database from "../../src/db";
 import User from "../../src/models/user";
 import { CategoryDocument } from "../../src/schemas/category";
 import { ReminderDocument } from "../../src/schemas/reminder";
+import GraphQLDate from "graphql-date";
 
 const typeDefs = gql`
+	scalar Date
+
 	type Reminder {
 		id: ID!
 		title: String!
 		description: String!
-		updatedAt: String!
-		createdAt: String!
-		dueAt: String!
-		duration: Number!
+		updatedAt: Date!
+		createdAt: Date!
+		dueAt: Date!
+		duration: Int!
 		wholeDay: Boolean!
 		notificationOffsets: [Int!]!
 		category: Category
@@ -38,8 +42,8 @@ const typeDefs = gql`
 
 	type Query {
 		getReminder(id: ID!): Reminder
-		getCategory(id: ID!, remindersFrom: String, remindersTo: String): Category
-		getUserData(from: String, to: String): UserData
+		getCategory(id: ID!, remindersFrom: Date, remindersTo: Date): Category
+		getUserData(from: Date, to: Date): UserData
 	}
 
 	type Mutation {
@@ -59,18 +63,14 @@ const typeDefs = gql`
 	}
 `;
 
-function fieldNodesInclude(nodes: ReadonlyArray<FieldNode>, nodeName: string) {
-	return nodes.some(node => node.name.value === nodeName);
-}
-
 function docToReminder(doc: ReminderDocument, fieldNodes?: ReadonlyArray<FieldNode>) {
 	return {
 		id: doc.id,
 		title: doc.get("title"),
 		description: doc.get("description"),
-		updatedAt: (doc.get("updatedAt") as Date).toISOString(),
-		createdAt: (doc.get("createdAt") as Date).toISOString(),
-		dueAt: (doc.get("dueAt") as Date).toISOString(),
+		updatedAt: doc.get("updatedAt"),
+		createdAt: doc.get("createdAt"),
+		dueAt: doc.get("dueAt"),
 		duration: doc.get("duration"),
 		wholeDay: doc.get("wholeDay"),
 		notificationOffsets: doc.get("notificationOffsets")
@@ -78,17 +78,17 @@ function docToReminder(doc: ReminderDocument, fieldNodes?: ReadonlyArray<FieldNo
 }
 
 async function docToCategory(doc: CategoryDocument, fieldNodes?: ReadonlyArray<FieldNode>, remindersFrom?: Date, remindersTo?: Date) {
-	let category: {[key: string]: any} = {
+	return {
 		id: doc.id,
 		name: doc.name,
 		icon: doc.icon,
-		expandByDefault: doc.expandByDefault
+		expandByDefault: doc.expandByDefault,
+		content: (await doc.findReminders(remindersFrom, remindersTo)).map(rDoc => docToReminder(rDoc))
 	};
-	if(fieldNodesInclude(fieldNodes, "content")) category.content = (await doc.findReminders(remindersFrom, remindersTo)).map(rDoc => docToReminder(rDoc));
-	return category;
 }
 
 const resolvers = {
+	Date: GraphQLDate,
 	Query: {
 		async getReminder(_, { id }, { session }, { fieldNodes }) {
 			const db = await Database.get();
@@ -106,17 +106,16 @@ const resolvers = {
 			if(!session) throw Error("Not logged in");
 			const user = User.fromSession(session);
 			const db = await Database.get();
-			const fromDate = new Date(from);
-			const toDate = new Date(to);
 
-			let userData: {[key: string]: any} = {};
-			if(fieldNodesInclude(fieldNodes, "categories"))
-				userData.categories = await db.Category.find({ owner: user.id }).exec().then(docs => Promise.all(docs.map(doc => docToCategory(doc, null, fromDate, toDate))));
-			if(fieldNodesInclude(fieldNodes, "reminders") || fieldNodesInclude(fieldNodes, "independentReminders"))
-				userData.reminders = await db.Reminder.find({ owner: user.id }).after(fromDate).before(toDate).exec().then(docs => docs.map(doc => docToReminder(doc)));
-			if(fieldNodesInclude(fieldNodes, "independentReminders"))
-				userData.independentReminders = userData.reminders.filter(reminder => userData.categories.some(category => category.content.some(r => r.id === reminder.id)));
-			return userData;
+			const categories = await db.Category.find({ owner: user.id }).exec().then(docs => Promise.all(docs.map(doc => docToCategory(doc, null, from, to))));
+			const reminders = await db.Reminder.find({ owner: user.id }).after(from).before(to).exec().then(docs => docs.map(doc => docToReminder(doc)));
+			const independentReminders = reminders.filter(reminder => categories.some(category => category.content.some(r => r.id === reminder.id)));
+			
+			return {
+				categories,
+				reminders,
+				independentReminders
+			};
 		}
 	},
 	Mutation: {
