@@ -35,40 +35,40 @@ type Query {
 
 type Mutation {
 	createReminder(
-		time: Date!
-		title: String
-		description: String
+		time: Date!,
+		title: String,
+		description: String,
 		wholeDay: Boolean
-		notificationOffsets: [Int!]
+		notificationOffsets: [Int!],
 		categoryId: ID
 	): Reminder!
 	createCategory(
-		name: String!
-		icon: String
+		name: String!,
+		icon: String,
 		expandByDefault: Boolean
 	): Category!,
 	categorizeReminder(
-		reminderId: ID!
+		reminderId: ID!,
 		categoryId: ID!
 	): Reminder!
 	addNotificationOffset(
-		reminderId: ID!
+		reminderId: ID!,
 		offset: Int!
 	): Reminder!
 	removeNotificationOffset(
-		reminderId: ID!
+		reminderId: ID!,
 		offset: Int!
 	): Reminder!
 	setNotificationOffsets(
-		reminder: ID!
+		reminder: ID!,
 		offsets: [Int!]!
 	): Reminder!
 	updateReminder(
-		id: ID!
-		title: String
-		description: String
-		dueAt: Date
-		duration: Int
+		id: ID!,
+		title: String,
+		description: String,
+		dueAt: Date,
+		duration: Int,
 		wholeDay: Boolean
 	): Reminder!
 	updateCategory(
