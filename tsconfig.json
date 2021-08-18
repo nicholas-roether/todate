@@ -16,7 +16,10 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
-		"jsx": "preserve"
+		"jsx": "preserve",
+		"typeRoots": [
+			"src/@types"
+		]
 	},
 	"include": [
 		"next-env.d.ts",
@@ -27,5 +30,8 @@
 	"exclude": [
 		".yarn",
 		".pnp.*"
+	],
+	"files": [
+		"src/@types/*.d.ts"
 	]
 }

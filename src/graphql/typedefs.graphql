@@ -1,0 +1,80 @@
+scalar Date
+
+type Reminder {
+	id: ID!
+	title: String!
+	description: String!
+	updatedAt: Date!
+	createdAt: Date!
+	dueAt: Date!
+	duration: Int!
+	wholeDay: Boolean!
+	notificationOffsets: [Int!]!
+	category: Category
+}
+
+type Category {
+	id: ID!
+	name: String!
+	content(from: Date, to: Date): [Reminder!]!
+	icon: String
+	expandByDefault: Boolean!
+}
+
+type ReminderHierarchy {
+	uncategorized: [Reminder!]!
+	categories: [Category!]!
+}
+
+type Query {
+	getReminder(id: ID!): Reminder
+	getCategory(id: ID!, remindersFrom: Date, remindersTo: Date): Category
+	getCurrentReminders(from: Date, to: Date): [Reminder!]!
+	getReminderHierarchy(from: Date, to: Date): ReminderHierarchy!
+}
+
+type Mutation {
+	createReminder(
+		time: String!
+		title: String
+		description: String
+		wholeDay: Boolean
+		notificationOffsets: [Int!]
+		categoryId: ID
+	): Reminder!
+	createCategory(
+		name: String!
+		icon: String
+		expandByDefault: Boolean
+	): Category!,
+	categorizeReminder(
+		reminderId: ID!
+		categoryId: ID!
+	): Reminder!
+	addNotificationOffset(
+		reminderId: ID!
+		offset: Int!
+	): Reminder!
+	removeNotificationOffset(
+		reminderId: ID!
+		offset: Int!
+	): Reminder!
+	setNotificationOffsets(
+		reminder: ID!
+		offsets: [Int!]!
+	): Reminder!
+	updateReminder(
+		id: ID!
+		title: String
+		description: String
+		dueAt: Date
+		duration: Int
+		wholeDay: Boolean
+	): Reminder!
+	updateCategory(
+		id: ID!,
+		name: String,
+		icon: String,
+		expandByDefault: Boolean
+	): Category!
+}
