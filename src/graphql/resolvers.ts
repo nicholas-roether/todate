@@ -25,9 +25,12 @@ const resolvers = {
 		}
 	},
 	ReminderHierarchy: {
-		async categories(_, __, { user }) {
+		async categories(_, __, { user, from, to }) {
 			const db = await Database.get();
-			return db.Category.find({ owner: user.id }).exec();
+			const docs = await db.Category.find({ owner: user.id }).exec();
+			// TODO make this better, this is terrible
+			return Promise.all(docs.map(async doc => (await db.Reminder.find({ category: doc.id }).after(from).before(to).exec())?.length != 0))
+				.then(results => results.map((keep, i) => keep ? docs[i] : null).filter(e => e != null));
 		},
 		async uncategorized(_, __, { user, from, to }) {
 			const db = await Database.get();
@@ -60,6 +63,7 @@ const resolvers = {
 			if(!session) throw Error("Not logged in");
 			session.from = from;
 			session.to = to;
+			return {} // All the getting is handled by child resolvers
 		}
 	},
 	Mutation: {
