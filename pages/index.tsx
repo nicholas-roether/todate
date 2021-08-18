@@ -18,19 +18,17 @@ const useStyles = makeStyles(theme => ({
 // TODO export queries to own file
 const GET_USER_REMINDERS_QUERY = gql`
 	query GetUserReminders($from: Date, $to: Date) {
-		getUserData(from: $from, to: $to) {
-			reminders {
+		getCurrentReminders(from: $from, to: $to) {
+			id,
+			title,
+			description,
+			dueAt,
+			duration,
+			wholeDay,
+			category {
 				id,
-				title,
-				description,
-				dueAt,
-				duration,
-				wholeDay,
-				category {
-					id,
-					name,
-					icon
-				}
+				name,
+				icon
 			}
 		}
 	}

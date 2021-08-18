@@ -25,7 +25,7 @@ export interface CategoryMethods {
 CategorySchema.method({
 	async findReminders(from?: Date, to?: Date): Promise<ReminderDocument[]> {
 		const db = await Database.get();
-		return db.Reminder.find({"category": this._id}).after(from).before(to).exec();
+		return db.Reminder.find({category: this._id, owner: this.owner}).after(from).before(to).exec();
 	}
 });
 
