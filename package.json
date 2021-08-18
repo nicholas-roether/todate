@@ -6,7 +6,9 @@
 		"dev": "NODE_OPTIONS='--inspect --trace-warnings' next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"test": "cypress open",
+		"db:clear": "./bin/clear-test-database.bat"
 	},
 	"dependencies": {
 		"@apollo/client": "^3.4.8",
@@ -30,6 +32,9 @@
 		"@types/graphql-date": "^1.0.5",
 		"@types/node": "^16.6.0",
 		"@types/react": "^17.0.17",
+		"cypress": "^8.3.0",
+		"cypress-mongo-seeder": "^1.0.8",
+		"cypress-nextjs-auth0": "^2.0.1",
 		"eslint": "7.32.0",
 		"eslint-config-next": "11.1.0",
 		"node-inspect": "^2.0.0",
