@@ -12,7 +12,8 @@ const resolvers = {
 		dueAt: parent => parent.get("dueAt"),
 		duration: parent => parent.get("duration"),
 		wholeDay: parent => parent.get("wholeDay"),
-		notificationOffsets: parent => parent.get("notificationOffsets")
+		notificationOffsets: parent => parent.get("notificationOffsets"),
+		category: parent => parent.findCategory()
 	},
 	Category: {
 		id: parent => parent.id,
