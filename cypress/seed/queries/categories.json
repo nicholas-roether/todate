@@ -25,23 +25,5 @@
 		"owner": "auth0|611d2723820362006c7a8ff3",
 		"icon": "default",
 		"expandByDefault": true
-	},
-	{
-		"_id": {
-			"$oid": "611d4fcfc61d630f488dbfc3"
-		},
-		"name": "Update-Test Category",
-		"owner": "auth0|611d2723820362006c7a8ff3",
-		"icon": "default",
-		"expandByDefault": true
-	},
-	{
-		"_id": {
-			"$oid": "611d4fcfc61d630f488dbfc4"
-		},
-		"name": "Delete-Test Category",
-		"owner": "auth0|611d2723820362006c7a8ff3",
-		"icon": "default",
-		"expandByDefault": true
 	}
 ]

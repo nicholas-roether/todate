@@ -35,6 +35,7 @@ ReminderSchema.method({
 	async findCategory(): Promise<CategoryDocument | null> {
 		const db = await Database.get();
 		const collectionId = this.get("category");
+		console.log(collectionId);
 		if(!collectionId) return null;
 		return db.Category.findById(collectionId).where({ owner: this.owner }).exec();
 	},
