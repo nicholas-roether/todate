@@ -35,7 +35,8 @@ type Query {
 
 type Mutation {
 	createReminder(
-		time: Date!,
+		dueAt: Date!,
+		duration: Int,
 		title: String,
 		description: String,
 		wholeDay: Boolean
@@ -77,4 +78,6 @@ type Mutation {
 		icon: String,
 		expandByDefault: Boolean
 	): Category!
+	deleteReminder(id: ID!): ID
+	deleteCategory(id: ID!): ID
 }

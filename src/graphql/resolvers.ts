@@ -67,16 +67,18 @@ const resolvers = {
 		}
 	},
 	Mutation: {
-		async createReminder(_, { time, title, description, wholeDay, notificationOffsets, categoryId }, { user }) {
+		async createReminder(_, { dueAt, duration, title, description, wholeDay, notificationOffsets, categoryId }, { user }) {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
+			const validCategory = await db.Category.exists({ _id: categoryId, owner: user.id });
 			const doc = new db.Reminder({
-				dueAt: time,
+				dueAt,
+				duration,
 				title,
 				description,
 				wholeDay,
 				notificationOffsets,
-				category: categoryId,
+				category: validCategory ? categoryId : null,
 				owner: user.id
 			});
 			await doc.save();
@@ -97,7 +99,7 @@ const resolvers = {
 		async categorizeReminder(_, { reminderId, categoryId }, { user }) {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
-			if(!(await db.Category.exists({ _id: categoryId}))) throw Error("Category doesn't exist");
+			if(!(await db.Category.exists({ _id: categoryId, owner: user.id }))) throw Error("Category does not exist or you don't have access to it");
 			const doc = await db.Reminder.findById(reminderId).exec();
 			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
 			doc.set("category", categoryId);
@@ -109,6 +111,7 @@ const resolvers = {
 			const db = await Database.get();
 			const doc = await db.Reminder.findById(reminderId).exec();
 			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
+			if(doc.get("notificationOffsets").includes(offset)) return doc;
 			doc.get("notificationOffsets").push(offset);
 			await doc.save();
 			return doc;
@@ -168,6 +171,22 @@ const resolvers = {
 			if(expandByDefault) doc.set("expandByDefault", expandByDefault);
 			await doc.save();
 			return doc;
+		},
+		async deleteReminder(_, { id }, { user }) {
+			if(!user) throw new Error("Not logged in");
+			const db = await Database.get();
+			const doc = await db.Reminder.findById(id).exec();
+			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
+			await doc.delete();
+			return id;
+		},
+		async deleteCategory(_, { id }, { user }) {
+			if(!user) throw new Error("Not logged in");
+			const db = await Database.get();
+			const doc = await db.Category.findById(id).exec();
+			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Category does not exist or you don't have access to it");
+			await doc.delete();
+			return id;
 		}
 	}
 };
