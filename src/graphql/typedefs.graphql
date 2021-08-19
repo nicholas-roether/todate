@@ -27,6 +27,8 @@ type ReminderHierarchy {
 }
 
 type Query {
+	reminderExists(id: ID!): Boolean!
+	categoryExists(id: ID!): Boolean!
 	getReminder(id: ID!): Reminder
 	getCategory(id: ID!, remindersFrom: Date, remindersTo: Date): Category
 	getCurrentReminders(from: Date, to: Date): [Reminder!]!
@@ -34,8 +36,6 @@ type Query {
 }
 
 type Mutation {
-	reminderExists(id: ID!): Boolean!
-	categoryExists(id: ID!): Boolean!
 	createReminder(
 		dueAt: Date!,
 		duration: Int,
