@@ -38,6 +38,18 @@ const resolvers = {
 		}
 	},
 	Query: {
+		async reminderExists(_, { id }, { user }) {
+			if(!user) throw Error("Not logged in");
+			const db = await Database.get();
+			const doc = await db.Reminder.findById(id).where("owner").equals(user.id).exec();
+			return Boolean(doc);
+		},
+		async categoryExists(_, { id }, { user }) {
+			if(!user) throw Error("Not logged in");
+			const db = await Database.get();
+			const doc = await db.Category.findById(id).where("owner").equals(user.id).exec();
+			return Boolean(doc);
+		},
 		async getReminder(_, { id }, { user }) {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
