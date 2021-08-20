@@ -23,7 +23,7 @@ Cypress.Commands.add("graphQL", (query: string, variables: {[key: string]: any} 
 		const title = `${query.substring(0, query.indexOf("("))}`;
 		const message = `${title} - ${duration}ms (${statusText})`;
 
-		const response: GraphQLResponse = {
+		const props: GraphQLResponse = {
 			title,
 			query,
 			variables,
@@ -39,11 +39,11 @@ Cypress.Commands.add("graphQL", (query: string, variables: {[key: string]: any} 
 			name: "GraphQL",
 			message,
 			consoleProps() {
-				return response;
+				return props;
 			}
 		});
 		
 		if(errors?.length > 0) throw errors[0];
-		return response;
+		return data;
 	})
 });

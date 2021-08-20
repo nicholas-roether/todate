@@ -1,0 +1,52 @@
+{
+	"reminderReadTest": {
+		"reminders": [
+			{
+				"_id": { "$oid": "611eba8077f7e14488dad000" },
+				"title": "Test-Reminder #1",
+				"description": "A basic test reminder",
+				"dueAt": { "$date": "2021-08-20T10:00:00.000Z" },
+				"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
+				"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
+				"duration": 10000,
+				"wholeDay": false,
+				"notificationOffsets": [],
+				"category": { "$oid": "611eba8077f7e14488dad100" },
+				"owner": "auth0|611d2723820362006c7a8ff3"
+			},
+			{
+				"_id": { "$oid": "611eba8077f7e14488dad001" },
+				"title": "Test-Reminder #2",
+				"description": "Another basic test reminder",
+				"dueAt": { "$date": "2021-09-20T10:00:00.000Z" },
+				"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
+				"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true,
+				"notificationOffsets": [ 10000, 20000 ],
+				"owner": "auth0|611d2723820362006c7a8ff3"
+			},
+			{
+				"_id": { "$oid": "611eba8077f7e14488dad002" },
+				"title": "Unowned Reminder",
+				"description": "A reminder the test user does not own",
+				"dueAt": { "$date": "2021-09-20T10:00:00.000Z" },
+				"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
+				"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true,
+				"notificationOffsets": [ 10000, 20000 ],
+				"owner": "someone else"
+			}
+		],
+		"categories": [
+			{
+				"_id": { "$oid": "611eba8077f7e14488dad100" },
+				"name": "Test-Category",
+				"expandByDefault": true,
+				"icon": "warning",
+				"owner": "auth0|611d2723820362006c7a8ff3"
+			}
+		]
+	}
+}

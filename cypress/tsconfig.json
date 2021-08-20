@@ -1,8 +1,14 @@
 {
 	"compilerOptions": {
 		"target": "es5",
-		"lib": ["es5", "dom"],
-		"types": ["cypress"]
+		"lib": [
+			"dom",
+			"dom.iterable",
+			"esnext"
+		],
+		"types": ["cypress"],
+		"resolveJsonModule": true,
+		"esModuleInterop": true
 	},
-	"include": ["**/*.ts"]
+	"include": ["**/*.ts"],
 }

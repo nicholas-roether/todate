@@ -20,7 +20,7 @@ declare global {
 
 	namespace Cypress {
 		interface Chainable {
-			graphQL: (query: string, variables?: {[key: string]: any}) => Cypress.Chainable<GraphQLResponse>
+			graphQL: (query: string, variables?: {[key: string]: any}) => Cypress.Chainable<{[key: string]: any}>
 		}
 	}
 }
