@@ -63,7 +63,6 @@ describe("The GraphQL Endpoint", () => {
 			cy.graphQL(REMINDER_EXISTS, { id: "611eba8077f7e14488dad999" }).then(data => {
 				expect(data.reminderExists, "should return false if reminder doesn't exist").to.be.false;
 			});
-
 			["611eba8077f7e14488dad300", "611eba8077f7e14488dad000"].forEach((reminderId, index) => {
 				cy.graphQL(GET_REMINDER, { id: reminderId }).then(data => {
 					const reminderDoc = docMap.reminders.find(doc => doc._id.toString() == reminderId);
@@ -89,11 +88,9 @@ describe("The GraphQL Endpoint", () => {
 					});
 				});
 			});
-
 			cy.graphQL(GET_REMINDER, { id: "611eba8077f7e14488dad301" }).then(data => {
 				expect(data.getReminder, "should not return unowned reminders").to.be.null;
 			});
-
 			cy.graphQL(GET_REMINDER_CATEGORY_ID, { id: "611eba8077f7e14488dad001" }).then(data => {
 				expect(data.getReminder.category, "should not return unowned category with reminder").to.be.null;
 			});
@@ -108,6 +105,22 @@ describe("The GraphQL Endpoint", () => {
 			}).then(() => {
 				cy.task<any>("findDBEntry", "reminders:611eba8077f7e14488dad000").then(doc => {
 					expect(doc?.category, "category should update").to.equal("611eba8077f7e14488dad302");
+				});
+			});
+			cy.graphQL(CATEGORIZE_REMINDER, {
+				reminderId: "611eba8077f7e14488dad301",
+				categoryId: "611eba8077f7e14488dad302"
+			}).then(() => {
+				cy.task<any>("findDBEntry", "reminders:611eba8077f7e14488dad301").then(doc => {
+					expect(doc?.category, "category of unowned reminder shouldn't update").to.be.null;
+				});
+			});
+			cy.graphQL(CATEGORIZE_REMINDER, {
+				reminderId: "611eba8077f7e14488dad001",
+				categoryId: "611eba8077f7e14488dad999"
+			}).then(() => {
+				cy.task<any>("findDBEntry", "reminders:611eba8077f7e14488dad001").then(doc => {
+					expect(doc?.category, "category should update to one that doesn't exist").to.be.null;
 				});
 			});
 		});

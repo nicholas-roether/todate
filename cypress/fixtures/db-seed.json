@@ -23,7 +23,7 @@
 			"duration": 10000,
 			"wholeDay": false,
 			"notificationOffsets": [ 10000, 20000 ],
-			"category": { "$oid": "611eba8077f7e14488dad302" },
+			"category": null,
 			"owner": "someone else"
 		},
 
