@@ -54,14 +54,14 @@ const resolvers = {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
 			const doc = await db.Reminder.findById(id).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) return null;
+			if(!doc || !user.idMatches(doc.owner)) return null;
 			return doc;
 		},
 		async getCategory(_, { id, remindersFrom, remindersTo }, session) {
 			if(!session) throw Error("Not logged in");
 			const db = await Database.get();
 			const doc = await db.Category.findById(id).exec();
-			if(!doc || !session.user.idMatches(doc.get("owner"))) return null;
+			if(!doc || !session.user.idMatches(doc.owner)) return null;
 			session.from = remindersFrom;
 			session.to = remindersTo;
 			return doc;
@@ -108,63 +108,45 @@ const resolvers = {
 			await doc.save();
 			return doc;
 		},
-		async categorizeReminder(_, { reminderId, categoryId }, { user }) {
-			if(!user) throw Error("Not logged in");
-			const db = await Database.get();
-			if(!(await db.Category.exists({ _id: categoryId, owner: user.id }))) throw Error("Category does not exist or you don't have access to it");
-			const doc = await db.Reminder.findById(reminderId).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
-			doc.set("category", categoryId);
-			await doc.save();
-			return doc;
-		},
-		async addNotificationOffset(_, { reminderId, offset }, { user }) {
-			if(!user) throw Error("Not logged in");
-			const db = await Database.get();
-			const doc = await db.Reminder.findById(reminderId).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
-			if(doc.get("notificationOffsets").includes(offset)) return doc;
-			doc.get("notificationOffsets").push(offset);
-			await doc.save();
-			return doc;
-		},
-		async removeNotificationOffset(_, { reminderId, offset }, { user }) {
-			if(!user) throw Error("Not logged in");
-			const db = await Database.get();
-			const doc = await db.Reminder.findById(reminderId).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
-			const offsets = doc.get("notificationOffsets");
-			while(offsets.includes(offset)) offsets.splice(offsets.firstIndexOf(offset), 1);
-			doc.set("notificationOffsets", offsets);
-			await doc.save();
-			return doc;
-		},
-		async setNotificationOffsets(_, { reminderId, offsets }, { user }) {
-			if(!user) throw Error("Not logged in");
-			const db = await Database.get();
-			const doc = await db.Reminder.findById(reminderId).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
-			doc.set("notificationOffsets", offsets);
-			await doc.save();
-			return doc;
-		},
 		async updateReminder(_, {
 			id,
 			title,
 			description,
 			dueAt,
 			duration,
-			wholeDay
+			wholeDay,
+			categoryId,
+			notificationOffsets,
+			addNotificationOffsets,
+			removeNotificationOffsets
+
 		}, { user }) {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
 			const doc = await db.Reminder.findById(id).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
-			if(title) doc.set("title", title);
-			if(description) doc.set("description", description);
-			if(dueAt) doc.set("dueAt", dueAt);
-			if(duration) doc.set("duration", duration);
-			if(wholeDay) doc.set("wholeDay", wholeDay);
+			if(!doc || !user.idMatches(doc.owner)) throw Error("Reminder does not exist or you don't have access to it");
+			if(categoryId) {
+				if(!(await db.Category.exists({ _id: categoryId, owner: user.id }))) throw Error("Category does not exist or you don't have access to it");
+				doc.category = categoryId;
+			}
+			if(title) doc.title = title;
+			if(description) doc.description = description;
+			if(dueAt) doc.dueAt = dueAt;
+			if(duration) doc.duration = duration;
+			if(wholeDay) doc.wholeDay = wholeDay;
+			if(notificationOffsets) doc.notificationOffsets = notificationOffsets;
+			if(addNotificationOffsets) {
+				addNotificationOffsets.forEach(offset => {
+					if(doc.notificationOffsets.includes(offset)) return;
+					doc.notificationOffsets.push(offset);
+				});
+			}
+			if(removeNotificationOffsets) {
+				removeNotificationOffsets.forEach(offset => {
+					while(doc.notificationOffsets.includes(offset))
+						doc.notificationOffsets.splice(doc.notificationOffsets.indexOf(offset), 1);
+				});
+			}
 			await doc.save();
 			return doc;
 		},
@@ -177,10 +159,10 @@ const resolvers = {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
 			const doc = await db.Category.findById(id).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Category does not exist or you don't have access to it");
-			if(name) doc.set("name", name);
-			if(icon) doc.set("icon", icon);
-			if(expandByDefault) doc.set("expandByDefault", expandByDefault);
+			if(!doc || !user.idMatches(doc.owner)) throw Error("Category does not exist or you don't have access to it");
+			if(name) doc.name = name;
+			if(icon) doc.icon = icon;
+			if(expandByDefault) doc.expandByDefault = expandByDefault;
 			await doc.save();
 			return doc;
 		},
@@ -188,7 +170,7 @@ const resolvers = {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
 			const doc = await db.Reminder.findById(id).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Reminder does not exist or you don't have access to it");
+			if(!doc || !user.idMatches(doc.owner)) throw Error("Reminder does not exist or you don't have access to it");
 			await doc.delete();
 			return id;
 		},
@@ -196,7 +178,7 @@ const resolvers = {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
 			const doc = await db.Category.findById(id).exec();
-			if(!doc || !user.idMatches(doc.get("owner"))) throw Error("Category does not exist or you don't have access to it");
+			if(!doc || !user.idMatches(doc.owner)) throw Error("Category does not exist or you don't have access to it");
 			await doc.delete();
 			return id;
 		}

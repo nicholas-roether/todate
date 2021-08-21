@@ -50,29 +50,17 @@ type Mutation {
 		icon: String,
 		expandByDefault: Boolean
 	): Category!,
-	categorizeReminder(
-		reminderId: ID!,
-		categoryId: ID!
-	): Reminder!
-	addNotificationOffset(
-		reminderId: ID!,
-		offset: Int!
-	): Reminder!
-	removeNotificationOffset(
-		reminderId: ID!,
-		offset: Int!
-	): Reminder!
-	setNotificationOffsets(
-		reminder: ID!,
-		offsets: [Int!]!
-	): Reminder!
 	updateReminder(
 		id: ID!,
 		title: String,
 		description: String,
 		dueAt: Date,
 		duration: Int,
-		wholeDay: Boolean
+		wholeDay: Boolean,
+		categoryId: ID,
+		notificationOffsets: [Int!]
+		addNotificationOffsets: [Int!],
+		removeNotificationOffsets: [Int!],
 	): Reminder!
 	updateCategory(
 		id: ID!,
