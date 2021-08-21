@@ -9,7 +9,7 @@
 			"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
 			"duration": 10000,
 			"wholeDay": false,
-			"notificationOffsets": [ 1000, 2000],
+			"notificationOffsets": [ 1000, 2000 ],
 			"category": { "$oid": "611eba8077f7e14488dad302" },
 			"owner": "auth0|611d2723820362006c7a8ff3"
 		},
@@ -70,7 +70,8 @@
 	},
 	"reminderUpdateTest": {
 		"reminders": [
-			{ "$import": "unownedReminder"},
+			{ "$import": "testReminder" },
+			{ "$import": "unownedReminder" },
 			{
 				"...$import": "testReminder",
 				"_id": { "$oid": "611eba8077f7e14488dad000" },
@@ -91,6 +92,27 @@
 				"title": "Categorization-Test Reminder",
 				"description": "A reminder to be categorized to an unowned category",
 				"category": null
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad003" },
+				"title": "Notification-Offset-Test Reminder",
+				"description": "A reminder to test adding notification offsets",
+				"notificationOffsets": [ 10 ]
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad004" },
+				"title": "Notification-Offset-Test Reminder",
+				"description": "A reminder to test removing notification offsets",
+				"notificationOffsets": [ 1, 2, 3, 4, 5, 6 ]
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad005" },
+				"title": "Notification-Offset-Test Reminder",
+				"description": "A reminder to test both adding and removing notification offsets",
+				"notificationOffsets": [ 1, 2, 3, 4, 5, 6 ]
 			}
 		],
 		"categories": [

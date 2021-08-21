@@ -43,7 +43,6 @@ Cypress.Commands.add("graphQL", (query: string, variables: {[key: string]: any} 
 			}
 		});
 		
-		if(errors?.length > 0) throw errors[0];
-		return data;
+		return { data, errors };
 	})
 });
