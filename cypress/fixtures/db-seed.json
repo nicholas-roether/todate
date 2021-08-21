@@ -1,52 +1,101 @@
 {
+	"$def": {
+		"testReminder": {
+			"_id": { "$oid": "611eba8077f7e14488dad300" },
+			"title": "Test-Reminder",
+			"description": "A basic test reminder",
+			"dueAt": { "$date": "2021-08-20T10:00:00.000Z" },
+			"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
+			"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
+			"duration": 10000,
+			"wholeDay": false,
+			"notificationOffsets": [ 1000, 2000],
+			"category": { "$oid": "611eba8077f7e14488dad302" },
+			"owner": "auth0|611d2723820362006c7a8ff3"
+		},
+		"unownedReminder": {
+			"_id": { "$oid": "611eba8077f7e14488dad301" },
+			"title": "Unowned Reminder",
+			"description": "A reminder the test user does not own",
+			"dueAt": { "$date": "2021-09-20T10:00:00.000Z" },
+			"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
+			"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
+			"duration": 10000,
+			"wholeDay": false,
+			"notificationOffsets": [ 10000, 20000 ],
+			"category": { "$oid": "611eba8077f7e14488dad302" },
+			"owner": "someone else"
+		},
+
+		"testCategory": {
+			"_id": { "$oid": "611eba8077f7e14488dad302" },
+			"name": "Test-Category",
+			"expandByDefault": true,
+			"icon": "warning",
+			"owner": "auth0|611d2723820362006c7a8ff3"
+		},
+		"unownedCategory": {
+			"_id": { "$oid": "611eba8077f7e14488dad303" },
+			"name": "Unowned Category",
+			"expandByDefault": true,
+			"icon": "warning",
+			"owner": "someone else"
+		}
+	},
 	"reminderReadTest": {
 		"reminders": [
+			{ "$import": "testReminder" },
+			{ "$import": "unownedReminder" },
 			{
+				"...$import": "testReminder",
 				"_id": { "$oid": "611eba8077f7e14488dad000" },
-				"title": "Test-Reminder #1",
-				"description": "A basic test reminder",
-				"dueAt": { "$date": "2021-08-20T10:00:00.000Z" },
-				"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
-				"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
-				"duration": 10000,
-				"wholeDay": false,
-				"notificationOffsets": [],
-				"category": { "$oid": "611eba8077f7e14488dad100" },
-				"owner": "auth0|611d2723820362006c7a8ff3"
-			},
-			{
-				"_id": { "$oid": "611eba8077f7e14488dad001" },
 				"title": "Test-Reminder #2",
-				"description": "Another basic test reminder",
-				"dueAt": { "$date": "2021-09-20T10:00:00.000Z" },
-				"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
-				"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
 				"duration": 0,
 				"wholeDay": true,
-				"notificationOffsets": [ 10000, 20000 ],
+				"notificationOffsets": [],
 				"owner": "auth0|611d2723820362006c7a8ff3"
 			},
 			{
-				"_id": { "$oid": "611eba8077f7e14488dad002" },
-				"title": "Unowned Reminder",
-				"description": "A reminder the test user does not own",
-				"dueAt": { "$date": "2021-09-20T10:00:00.000Z" },
-				"createdAt": { "$date": "2021-08-01T10:00:00.000Z" },
-				"updatedAt": { "$date": "2021-08-01T10:00:00.000Z" },
-				"duration": 0,
-				"wholeDay": true,
-				"notificationOffsets": [ 10000, 20000 ],
-				"owner": "someone else"
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad001" },
+				"title": "Test-Reminder #3",
+				"description": "A reminder with an unowned category",
+				"category": { "$oid": "611eba8077f7e14488dad303" }
 			}
 		],
 		"categories": [
+			{ "$import": "testCategory" },
+			{ "$import": "unownedCategory"}
+		]
+	},
+	"reminderUpdateTest": {
+		"reminders": [
+			{ "$import": "unownedReminder"},
 			{
-				"_id": { "$oid": "611eba8077f7e14488dad100" },
-				"name": "Test-Category",
-				"expandByDefault": true,
-				"icon": "warning",
-				"owner": "auth0|611d2723820362006c7a8ff3"
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad000" },
+				"title": "Categorization-Test Reminder",
+				"description": "A reminder to be categorized",
+				"category": "611eba8077f7e14488dad303"
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad001" },
+				"title": "Categorization-Test Reminder",
+				"description": "A reminder to be categorized to a nonexisting category",
+				"category": null
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad002" },
+				"title": "Categorization-Test Reminder",
+				"description": "A reminder to be categorized to an unowned category",
+				"category": null
 			}
+		],
+		"categories": [
+			{ "$import": "testCategory" },
+			{ "$import": "unownedCategory" }
 		]
 	}
 }

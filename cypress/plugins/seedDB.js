@@ -1,5 +1,5 @@
 const { MongoClient, ObjectId } = require("mongodb");
-const { isValidObjectId } = require("mongoose");
+const { getDBServerAddress, getDatabaseName } = require("./util/mongo_util");
 
 /**
  * 	@typedef {{[key: string]: any}} Doc
@@ -20,7 +20,7 @@ const { isValidObjectId } = require("mongoose");
  */
  function parseDoc(doc, definitions = {}) {
 	if(Array.isArray(doc)) return parseDocs(doc, definitions);
-	if(typeof doc !== "object" || doc instanceof ObjectId || doc instanceof Date) return doc;
+	if(typeof doc !== "object" || doc === null || doc instanceof ObjectId || doc instanceof Date) return doc;
 	const properties = Object.keys(doc);
 	if(properties.length == 1) {
 		const descriptor = properties[0];
@@ -32,6 +32,10 @@ const { isValidObjectId } = require("mongoose");
 		}
 	}
 	let result = {};
+	if(properties.includes("...$import")) {
+		Object.assign(result, definitions?.[doc["...$import"]] ?? {});
+		properties.splice(properties.indexOf("...$import"), 1);
+	}
 	for(let propertyName of properties)
 		result[propertyName] = parseDoc(doc[propertyName], definitions);
 	return result;
@@ -103,8 +107,8 @@ function parseSeed(source, path) {
  */
 async function seedDB(mongoUri, source, path) {
 	const docMap = parseSeed(source, path);
-	const serverAddress = mongoUri.substr(0, mongoUri.lastIndexOf("/"));
-	const dbName = mongoUri.substr(mongoUri.lastIndexOf("/") + 1);
+	const serverAddress = getDBServerAddress(mongoUri)
+	const dbName = getDatabaseName(mongoUri);
 	const client = new MongoClient(serverAddress);
 	await client.connect();
 	const db = client.db(dbName);
