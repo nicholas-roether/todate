@@ -12,18 +12,18 @@ const REMINDER_EXISTS = gql`
 const GET_REMINDER = gql`
 	query($id: ID!) {
 		getReminder(id: $id) {
-			id,
-			title,
-			description,
-			updatedAt,
-			createdAt,
-			dueAt,
-			duration,
-			notificationOffsets,
+			id
+			title
+			description
+			updatedAt
+			createdAt
+			dueAt
+			duration
+			notificationOffsets
 			category {
-				id,
-				name,
-				icon,
+				id
+				name
+				icon
 				expandByDefault
 			}
 		}
@@ -42,15 +42,15 @@ const GET_REMINDER_CATEGORY_ID = gql`
 
 const UPDATE_REMINDER = gql`
 	mutation(
-		$id: ID!,
-		$title: String,
-		$description: String,
-		$dueAt: Date,
-		$duration: Int,
-		$wholeDay: Boolean,
-		$categoryId: ID,
+		$id: ID!
+		$title: String
+		$description: String
+		$dueAt: Date
+		$duration: Int
+		$wholeDay: Boolean
+		$categoryId: ID
 		$notificationOffsets: [Int!]
-		$addNotificationOffsets: [Int!],
+		$addNotificationOffsets: [Int!]
 		$removeNotificationOffsets: [Int!]
 	) {
 		updateReminder(
@@ -72,21 +72,21 @@ const UPDATE_REMINDER = gql`
 
 const CREATE_REMINDER = gql`
 	mutation(
-		$dueAt: Date!,
-		$duration: Int,
-		$title: String,
-		$description: String,
-		$wholeDay: Boolean,
-		$notificationOffsets: [Int!],
+		$dueAt: Date!
+		$duration: Int
+		$title: String
+		$description: String
+		$wholeDay: Boolean
+		$notificationOffsets: [Int!]
 		$categoryId: ID
 	) {
 		createReminder(
-			dueAt: $dueAt,
-			duration: $duration,
-			title: $title,
-			description: $description,
-			wholeDay: $wholeDay,
-			notificationOffsets: $notificationOffsets,
+			dueAt: $dueAt
+			duration: $duration
+			title: $title
+			description: $description
+			wholeDay: $wholeDay
+			notificationOffsets: $notificationOffsets
 			categoryId: $categoryId
 		) {
 			id

@@ -11,28 +11,28 @@ const CATEGORY_EXISTS = gql`
 
 const GET_CATEGORY = gql`
 	query(
-		$id: ID!,
-		$remindersFrom: Date,
+		$id: ID!
+		$remindersFrom: Date
 		$remindersTo: Date
 	) {
 		getCategory(
-			id: $id,
-			remindersFrom: $remindersFrom,
+			id: $id
+			remindersFrom: $remindersFrom
 			remindersTo: $remindersTo
 		) {
-			id,
-			name,
-			icon,
-			expandByDefault,
+			id
+			name
+			icon
+			expandByDefault
 			content {
-				id,
-				title,
-				description,
-				updatedAt,
-				createdAt,
-				dueAt,
-				duration,
-				wholeDay,
+				id
+				title
+				description
+				updatedAt
+				createdAt
+				dueAt
+				duration
+				wholeDay
 				notificationOffsets
 			}
 		}
@@ -42,14 +42,14 @@ const GET_CATEGORY = gql`
 const UPDATE_CATEGORY = gql`
 	mutation(
 		$id: ID!
-		$name: String,
-		$icon: String,
+		$name: String
+		$icon: String
 		$expandByDefault: Boolean
 	) {
 		updateCategory(
-			id: $id,
-			name: $name,
-			icon: $icon,
+			id: $id
+			name: $name
+			icon: $icon
 			expandByDefault: $expandByDefault
 		) {
 			id
@@ -60,14 +60,14 @@ const UPDATE_CATEGORY = gql`
 const CREATE_CATEGORY = gql`
 	mutation(
 		$id: ID!
-		$name: String,
-		$icon: String,
+		$name: String
+		$icon: String
 		$expandByDefault: String
 	) {
 		createCategory(
-			id: $id,
-			name: $name,
-			icon: $icon,
+			id: $id
+			name: $name
+			icon: $icon
 			expandByDefault: $expandByDefault
 		) {
 			id
