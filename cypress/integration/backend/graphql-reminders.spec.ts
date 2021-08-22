@@ -1,4 +1,5 @@
 // Studpid hack to trick vscode into doing syntax highlighting
+// @ts-ignore
 const gql: (t: TemplateStringsArray) => string = t => t.raw.join("");
 
 const REMINDER_EXISTS = gql`
