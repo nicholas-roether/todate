@@ -96,7 +96,7 @@ const DELETE_REMINDER = gql`
 	mutation(
 		$id: ID!
 	) {
-		id
+		deleteReminder(id: $id)
 	}
 `;
 
@@ -259,23 +259,27 @@ describe("The GraphQL Endpoint", () => {
 					expect(doc.title, "should set title correctly").to.equal(testCreate.title);
 					expect(doc.description, "should set description correctly").to.equal(testCreate.description);
 					expect(doc.wholeDay, "should set wholeDay correctly").to.equal(testCreate.wholeDay);
-					expect(doc.notificationOffsets, "should set notificationOffsets correctly").to.equal(testCreate.notificationOffsets);
-					expect(doc.categoryId, "should set categoryId correctly").to.equal(testCreate.categoryId);
+					expect(doc.notificationOffsets, "should set notificationOffsets correctly").to.have.members(testCreate.notificationOffsets);
+					expect(doc.category, "should set categoryId correctly").to.equal(testCreate.categoryId);
 				});
 			});
 			cy.graphQL(CREATE_REMINDER, {
 				...testCreate,
 				categoryId: "611eba8077f7e14488dad999"
 			}).then(({ data, errors }) => {
-				expect(data.createReminder.id, "should not create reminders with non-existent category").to.be.null;
-				expect(errors.length, "should throw errors if trying to do so").to.be.greaterThan(0);
+				const { id } = data.createReminder;
+				cy.task<any>("findDBEntry", `reminders:${id}`).then(doc => {
+					expect(doc.category, "should ignore non-existent categories").to.be.null;
+				});
 			});
 			cy.graphQL(CREATE_REMINDER, {
 				...testCreate,
 				categoryId: "611eba8077f7e14488dad301"
 			}).then(({ data, errors }) => {
-				expect(data.createReminder.id, "should not create reminders with unowned category").to.be.null;
-				expect(errors.length, "should throw errors if trying to do so").to.be.greaterThan(0)
+				const { id } = data.createReminder;
+				cy.task<any>("findDBEntry", `reminders:${id}`).then(doc => {
+					expect(doc.category, "should ignore unowned categories").to.be.null;
+				});
 			});
 		});
 	});
