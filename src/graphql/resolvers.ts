@@ -1,10 +1,14 @@
 import GraphQLDate from "graphql-date";
 import Database from "../db";
+import Hashids from "hashids";
+
+// TODO making the salt public kinda defeats the point...
+const hashids = new Hashids("todate");
 
 const resolvers = {
 	Date: GraphQLDate,
 	Reminder: {
-		id: parent => parent.id,
+		id: parent => hashids.encodeHex(parent.id),
 		title: parent => parent.get("title"),
 		description: parent => parent.get("description"),
 		updatedAt: parent => parent.get("updatedAt"),
@@ -16,7 +20,7 @@ const resolvers = {
 		category: parent => parent.findCategory()
 	},
 	Category: {
-		id: parent => parent.id,
+		id: parent => hashids.encodeHex(parent.id),
 		name: parent => parent.get("name"),
 		icon: parent => parent.get("icon"),
 		expandByDefault: parent => parent.get("expandByDefault"),
@@ -29,6 +33,8 @@ const resolvers = {
 			const db = await Database.get();
 			const docs = await db.Category.find({ owner: user.id }).exec();
 			// TODO make this better, this is terrible
+			// Note to future me - this code tries to weed out categories that don't have reminders associated with them within the given time frame.
+			// Do do this it makes an individual query for each category requesting all it's reminders within the timeframe...
 			return Promise.all(docs.map(async doc => (await db.Reminder.find({ category: doc.id }).after(from).before(to).exec())?.length != 0))
 				.then(results => results.map((keep, i) => keep ? docs[i] : null).filter(e => e != null));
 		},
@@ -41,26 +47,26 @@ const resolvers = {
 		async reminderExists(_, { id }, { user }) {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Reminder.findById(id).where("owner").equals(user.id).exec();
+			const doc = await db.Reminder.findById(hashids.decodeHex(id)).where("owner").equals(user.id).exec();
 			return Boolean(doc);
 		},
 		async categoryExists(_, { id }, { user }) {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Category.findById(id).where("owner").equals(user.id).exec();
+			const doc = await db.Category.findById(hashids.decodeHex(id)).where("owner").equals(user.id).exec();
 			return Boolean(doc);
 		},
 		async getReminder(_, { id }, { user }) {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Reminder.findById(id).exec();
+			const doc = await db.Reminder.findById(hashids.decodeHex(id)).exec();
 			if(!doc || !user.idMatches(doc.owner)) return null;
 			return doc;
 		},
 		async getCategory(_, { id, remindersFrom, remindersTo }, session) {
 			if(!session) throw Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Category.findById(id).exec();
+			const doc = await db.Category.findById(hashids.decodeHex(id)).exec();
 			if(!doc || !session.user.idMatches(doc.owner)) return null;
 			session.from = remindersFrom;
 			session.to = remindersTo;
@@ -82,6 +88,7 @@ const resolvers = {
 		async createReminder(_, { dueAt, duration, title, description, wholeDay, notificationOffsets, categoryId }, { user }) {
 			if(!user) throw Error("Not logged in");
 			const db = await Database.get();
+			categoryId = hashids.decodeHex(categoryId);
 			const validCategory = await db.Category.exists({ _id: categoryId, owner: user.id });
 			const doc = new db.Reminder({
 				dueAt,
@@ -123,11 +130,12 @@ const resolvers = {
 		}, { user }) {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Reminder.findById(id).exec();
+			const doc = await db.Reminder.findById(hashids.decodeHex(id)).exec();
 			if(!doc || !user.idMatches(doc.owner)) throw Error("Reminder does not exist or you don't have access to it");
 			if(categoryId) {
-				if(!(await db.Category.exists({ _id: categoryId, owner: user.id }))) throw Error("Category does not exist or you don't have access to it");
-				doc.category = categoryId;
+				const decoded = hashids.decodeHex(categoryId);
+				if(!(await db.Category.exists({ _id: decoded, owner: user.id }))) throw Error("Category does not exist or you don't have access to it");
+				doc.category = decoded;
 			}
 			if(title) doc.title = title;
 			if(description) doc.description = description;
@@ -158,7 +166,7 @@ const resolvers = {
 		}, { user }) {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Category.findById(id).exec();
+			const doc = await db.Category.findById(hashids.decodeHex(id)).exec();
 			if(!doc || !user.idMatches(doc.owner)) throw Error("Category does not exist or you don't have access to it");
 			if(name) doc.name = name;
 			if(icon) doc.icon = icon;
@@ -169,7 +177,7 @@ const resolvers = {
 		async deleteReminder(_, { id }, { user }) {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Reminder.findById(id).exec();
+			const doc = await db.Reminder.findById(hashids.decodeHex(id)).exec();
 			if(!doc || !user.idMatches(doc.owner)) throw Error("Reminder does not exist or you don't have access to it");
 			await doc.delete();
 			return id;
@@ -177,7 +185,7 @@ const resolvers = {
 		async deleteCategory(_, { id }, { user }) {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Category.findById(id).exec();
+			const doc = await db.Category.findById(hashids.decodeHex(id)).exec();
 			if(!doc || !user.idMatches(doc.owner)) throw Error("Category does not exist or you don't have access to it");
 			await doc.delete();
 			return id;

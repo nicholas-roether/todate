@@ -3724,6 +3724,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"hashids@npm:^2.2.8":
+  version: 2.2.8
+  resolution: "hashids@npm:2.2.8"
+  checksum: 9292a28975d9868cc531f51c0552df06cbf0a50f2f966c9833daac7bbe3e277922509af324d4692b5a42b3283d93dfc9c0e61a5347dccad63df6b3183aa7d5eb
+  languageName: node
+  linkType: hard
+
 "he@npm:1.2.0":
   version: 1.2.0
   resolution: "he@npm:1.2.0"
@@ -7269,6 +7276,7 @@ resolve@^2.0.0-next.3:
     graphql: ^15.5.1
     graphql-date: ^1.0.3
     graphql-tag: ^2.12.5
+    hashids: ^2.2.8
     micro: ^9.3.4
     mongodb: ^4.1.0
     mongoose: ^5.13.7
