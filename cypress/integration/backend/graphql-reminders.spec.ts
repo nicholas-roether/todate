@@ -68,6 +68,38 @@ const UPDATE_REMINDER = gql`
 	}
 `;
 
+const CREATE_REMINDER = gql`
+	mutation(
+		$dueAt: Date!,
+		$duration: Int,
+		$title: String,
+		$description: String,
+		$wholeDay: Boolean,
+		$notificationOffsets: [Int!],
+		$categoryId: ID
+	) {
+		createReminder(
+			dueAt: $dueAt,
+			duration: $duration,
+			title: $title,
+			description: $description,
+			wholeDay: $wholeDay,
+			notificationOffsets: $notificationOffsets,
+			categoryId: $categoryId
+		) {
+			id
+		}
+	}
+`;
+
+const DELETE_REMINDER = gql`
+	mutation(
+		$id: ID!
+	) {
+		id
+	}
+`;
+
 describe("The GraphQL Endpoint", () => {
 	before(() => {
 		cy.login();
@@ -206,4 +238,64 @@ describe("The GraphQL Endpoint", () => {
 			});
 		});
 	});
+
+	it("correctly creates reminders", () => {
+		cy.task<seedDB.DocMap>("seedDB", "reminderCreateTest").then(docMap => {
+			const testCreate = {
+				dueAt: new Date("2021-08-21T23:59:29.290Z"),
+				duration: 10,
+				title: "Created Reminder",
+				description: "This reminder was created programmatically",
+				wholeDay: true,
+				notificationOffsets: [ 69, 420 ],
+				categoryId: "611eba8077f7e14488dad302"
+			}
+			cy.graphQL(CREATE_REMINDER, testCreate).then(({ data }) => {
+				const { id } = data.createReminder;
+				cy.task<any>("findDBEntry", `reminders:${id}`).then(doc => {
+					expect(doc, "reminder should be created").to.not.be.null;
+					expect(doc.dueAt, "should set dueAt correctly").to.equal(testCreate.dueAt.toISOString());
+					expect(doc.duration, "should set duration correctly").to.equal(testCreate.duration);
+					expect(doc.title, "should set title correctly").to.equal(testCreate.title);
+					expect(doc.description, "should set description correctly").to.equal(testCreate.description);
+					expect(doc.wholeDay, "should set wholeDay correctly").to.equal(testCreate.wholeDay);
+					expect(doc.notificationOffsets, "should set notificationOffsets correctly").to.equal(testCreate.notificationOffsets);
+					expect(doc.categoryId, "should set categoryId correctly").to.equal(testCreate.categoryId);
+				});
+			});
+			cy.graphQL(CREATE_REMINDER, {
+				...testCreate,
+				categoryId: "611eba8077f7e14488dad999"
+			}).then(({ data, errors }) => {
+				expect(data.createReminder.id, "should not create reminders with non-existent category").to.be.null;
+				expect(errors.length, "should throw errors if trying to do so").to.be.greaterThan(0);
+			});
+			cy.graphQL(CREATE_REMINDER, {
+				...testCreate,
+				categoryId: "611eba8077f7e14488dad301"
+			}).then(({ data, errors }) => {
+				expect(data.createReminder.id, "should not create reminders with unowned category").to.be.null;
+				expect(errors.length, "should throw errors if trying to do so").to.be.greaterThan(0)
+			});
+		});
+	});
+
+	it("correctly deletes reminders", () => {
+		cy.task<seedDB.DocMap>("seedDB", "reminderDeletionTest").then(docMap => {
+			cy.graphQL(DELETE_REMINDER, { id: "611eba8077f7e14488dad300" }).then(() => {
+				cy.task<any>("findDBEntry", "reminders:611eba8077f7e14488dad300").then(doc => {
+					expect(doc, "should delete reminders").to.be.null;
+				});
+			});
+			cy.graphQL(DELETE_REMINDER, { id: "611eba8077f7e14488dad999" }).then(({ errors }) => {
+				expect(errors.length, "should throw error when trying to delete non-existent reminder").to.be.greaterThan(0);
+			});
+			cy.graphQL(DELETE_REMINDER, { id: "611eba8077f7e14488dad301" }).then(({ errors }) => {
+				cy.task<any>("findDBEntry", "reminders:611eba8077f7e14488dad301").then(doc => {
+					expect(doc, "shouldn't delete unowned reminders").to.not.be.null;
+				});
+				expect(errors.length, "should throw error when trying to delete unowned reminder");
+			});
+		});
+	})
 });
