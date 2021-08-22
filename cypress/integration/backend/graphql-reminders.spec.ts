@@ -1,8 +1,5 @@
-// Studpid hack to trick vscode into doing syntax highlighting
-// @ts-ignore
-const gql: (t: TemplateStringsArray) => string = t => t.raw.join("");
-
 import Hashids from "hashids";
+import { findInDocMap, gql } from "../../util";
 
 const hashids = new Hashids("todate");
 
@@ -105,7 +102,7 @@ const DELETE_REMINDER = gql`
 	}
 `;
 
-describe("The GraphQL Endpoint", () => {
+describe("The GraphQL Endpoint (concerning reminders)", () => {
 	before(() => {
 		cy.login();
 	});
@@ -122,11 +119,14 @@ describe("The GraphQL Endpoint", () => {
 			cy.graphQL(REMINDER_EXISTS, { id: hashids.encodeHex("611eba8077f7e14488dad999") }).then(({ data }) => {
 				expect(data.reminderExists, "should return false if reminder doesn't exist").to.be.false;
 			});
+			cy.graphQL(REMINDER_EXISTS, { id: hashids.encodeHex("611eba8077f7e14488dad301") }).then(({ data }) => {
+				expect(data.reminderExists, "should return false if reminder isn't owned").to.be.false;
+			});
 			["611eba8077f7e14488dad300", "611eba8077f7e14488dad000"].forEach((reminderId, index) => {
 				cy.graphQL(GET_REMINDER, { id: hashids.encodeHex(reminderId) }).then(({ data }) => {
-					const reminderDoc = docMap.reminders.find(doc => doc._id.toString() == reminderId);
+					const reminderDoc = findInDocMap(docMap, reminderId);
 					const categoryDoc = reminderDoc.category 
-						? docMap.categories.find(doc => doc._id.toString() == reminderDoc.category)
+						? findInDocMap(docMap, reminderDoc.category)
 						: null;
 										
 					expect(data.getReminder, "should correctly return reminder data by id").to.deep.equal({
@@ -158,6 +158,7 @@ describe("The GraphQL Endpoint", () => {
 
 	it("correctly updates reminders", () => {
 		cy.task<seedDB.DocMap>("seedDB", "reminderUpdateTest").then(docMap => {
+			const unownedReminder = findInDocMap(docMap, "611eba8077f7e14488dad301");
 			const testUpdate = {
 				title: "Updated Reminder",
 				description: "This reminder was programmatically updated",
@@ -177,6 +178,15 @@ describe("The GraphQL Endpoint", () => {
 					expect(doc.duration, "should update duration").to.equal(testUpdate.duration);
 					expect(doc.wholeDay, "should update wholeDay").to.equal(testUpdate.wholeDay);
 					expect(doc.notificationOffsets, "should update notificationOffsets").to.have.members(testUpdate.notificationOffsets);
+				});
+			});
+			cy.graphQL(UPDATE_REMINDER, {
+				id: hashids.encodeHex(unownedReminder._id),
+				...testUpdate
+			}).then(({ data, errors}) => {
+				cy.task<any>("findDBEntry", `reminders:${unownedReminder._id}`).then(doc => {
+					expect(doc, "shouldn't have updated document").to.deep.equal(unownedReminder);
+					expect(errors.length, "should throw errors if trying to do so").to.be.greaterThan(0);
 				});
 			});
 
@@ -222,7 +232,7 @@ describe("The GraphQL Endpoint", () => {
 				categoryId: hashids.encodeHex("611eba8077f7e14488dad302")
 			}).then(({ errors }) => {
 				expect(
-					errors.some(err => err.message = "Category doesn't exist or you don't have acces to it"),
+					errors.some(err => err.message = "Category doesn't exist or you don't have access to it"),
 					"should return appropriate error when trying to access unowned category"
 				).to.be.true;
 				cy.task<any>("findDBEntry", "reminders:611eba8077f7e14488dad301").then(doc => {
@@ -234,7 +244,7 @@ describe("The GraphQL Endpoint", () => {
 				categoryId: hashids.encodeHex("611eba8077f7e14488dad999")
 			}).then(({ errors }) => {
 				expect(
-					errors.some(err => err.message = "Category doesn't exist or you don't have acces to it"),
+					errors.some(err => err.message = "Category doesn't exist or you don't have access to it"),
 					"should return appropriate error when trying to access non-existent category"
 				).to.be.true;
 				cy.task<any>("findDBEntry", "reminders:611eba8077f7e14488dad301").then(doc => {
