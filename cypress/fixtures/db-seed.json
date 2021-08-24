@@ -232,7 +232,7 @@
 				"category": "611eba8077f7e14488dad302"
 			},
 			{
-				"$...import": "unownedReminder",
+				"...$import":  "unownedReminder",
 				"_id": { "$oid": "611eba8077f7e14488dad002" },
 				"category": "611eba8077f7e14488dad303"
 			}
@@ -240,6 +240,144 @@
 		"categories": [
 			{ "$import": "testCategory" },
 			{ "$import": "unownedCategory" }
+		]
+	},
+	"currentReminderTest": {
+		"reminders": [
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad000" },
+				"title": "Day-Long Reminder",
+				"description": "A day-long reminder within range",
+				"dueAt": { "$date": "2021-08-20T00:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad001" },
+				"title": "Day-Long Reminder",
+				"description": "A day-long reminder within range, but with strange dueAt value",
+				"dueAt": { "$date": "2021-08-20T02:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad002" },
+				"dueAt": { "$date": "2021-08-20T08:00:00.000Z" },
+				"duration": 0
+			},
+			{ "$import": "testReminder" },
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad003" },
+				"dueAt": { "$date": "2021-08-20T10:00:10.000Z" },
+				"duration": 0
+			},
+			{
+				"...$import": "unownedReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad004" },
+				"dueAt": { "$date": "2021-08-20T11:00:00.000Z" }
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad005" },
+				"dueAt": { "$date": "2021-09-20T02:00:00.000Z" },
+				"duration": 0
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad006" },
+				"dueAt": { "$date": "2021-09-20T10:00:00.000Z" },
+				"duration": 0
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad007" },
+				"title": "Day-Long Reminder",
+				"description": "A day-long reminder out of range for some tests",
+				"dueAt": { "$date": "2021-09-20T11:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true
+			}
+		],
+		"categories": [
+			{ "$import": "testCategory" }
+		]
+	},
+	"reminderHierarchyTest": {
+		"reminders": [
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad000" },
+				"title": "Day-Long Reminder",
+				"description": "A day-long reminder within range",
+				"dueAt": { "$date": "2021-08-20T00:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true,
+				"category": null
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad001" },
+				"title": "Day-Long Reminder",
+				"description": "A day-long reminder within range, but with strange dueAt value",
+				"dueAt": { "$date": "2021-08-20T02:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true,
+				"category": { "$oid": "611eba8077f7e14488dad303" }
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad002" },
+				"dueAt": { "$date": "2021-08-20T08:00:00.000Z" },
+				"duration": 0
+			},
+			{ "$import": "testReminder" },
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad003" },
+				"dueAt": { "$date": "2021-08-20T10:00:10.000Z" },
+				"duration": 0,
+				"category": null
+			},
+			{
+				"...$import": "unownedReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad004" },
+				"dueAt": { "$date": "2021-08-20T11:00:00.000Z" }
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad005" },
+				"dueAt": { "$date": "2021-09-20T02:00:00.000Z" },
+				"duration": 0,
+				"category": { "$oid": "611eba8077f7e14488dad100" }
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad006" },
+				"dueAt": { "$date": "2021-09-20T10:00:00.000Z" },
+				"duration": 0
+			},
+			{
+				"...$import": "testReminder",
+				"_id": { "$oid": "611eba8077f7e14488dad007" },
+				"title": "Day-Long Reminder",
+				"description": "A day-long reminder out of range for some tests",
+				"dueAt": { "$date": "2021-09-20T11:00:00.000Z" },
+				"duration": 0,
+				"wholeDay": true
+			}
+		],
+		"categories": [
+			{ "$import": "testCategory" },
+			{ "$import": "unownedCategory" },
+			{
+				"...$import": "testCategory",
+				"_id": { "$oid": "611eba8077f7e14488dad100" },
+				"name": "Test-Category #2"
+			}
 		]
 	}
 }

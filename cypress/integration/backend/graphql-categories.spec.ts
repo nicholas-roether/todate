@@ -117,6 +117,9 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 			 *  * some reminder  			*--- some reminder w/ a duration
 			 *  ^ the basic test reminder	° an unowned reminder
 			 *  + a day-long reminder		(+) a day-long reminder outside the range
+			 * 
+			 * 
+			 *  Test 6: Make sure that reminder 1 doesn't bleed over into the next day
 			 */
 			const testCategory = findInDocMap(docMap, "611eba8077f7e14488dad302");
 			const reminders = [
@@ -131,7 +134,7 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				findInDocMap(docMap, "611eba8077f7e14488dad007"),
 				findInDocMap(docMap, "611eba8077f7e14488dad008"),
 				findInDocMap(docMap, "611eba8077f7e14488dad009"),
-			]
+			];
 			// Test 1
 			cy.graphQL(GET_CATEGORY, { id: hashids.encodeHex(testCategory._id) }).then(({ data }) => {
 				const category = data.getCategory;
@@ -198,7 +201,7 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				to: new Date("2021-09-20T02:30:00.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
-				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from above")
+				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from both sides")
 					.to.have.members([
 						reminders[1],
 						reminders[2],
@@ -210,6 +213,19 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 			// Test 5
 			cy.graphQL(GET_CATEGORY, { id: hashids.encodeHex("611eba8077f7e14488dad303") }).then(({ data }) => {
 				expect(data, "should not return unowned categories").to.be.null;
+			});
+			// Test 6
+			cy.graphQL(GET_CATEGORY, {
+				id: hashids.encodeHex(testCategory._id),
+				from: new Date("2021-08-21T00:00:00.000Z")
+			}).then(({ data }) => {
+				const category = data.getCategory;
+				expect(category.content.map(reminder => reminder.id), "should correctly handle day-long reminders w/ weird dueAt values")
+					.to.have.members([
+						reminders[6],
+						reminders[7],
+						reminders[8]
+					].map(reminder => hashids.encodeHex(reminder._id)));
 			});
 		});
 	});
