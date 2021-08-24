@@ -38,7 +38,6 @@ const GET_REMINDER_HIERARCHY = gql`
 				duration
 				wholeDay
 				notificationOffsets
-				category
 			}
 			categories {
 				id
@@ -55,12 +54,38 @@ const GET_REMINDER_HIERARCHY = gql`
 					duration
 					wholeDay
 					notificationOffsets
-					category
 				}
 			}
 		}
 	}
 `;
+
+function categoryDocToResponse(doc: seedDB.Doc, reminders?: seedDB.Doc): {[key: string]: any} {
+	let response: {[key: string]: any} = {
+		id: hashids.encodeHex(doc._id),
+		name: doc.name,
+		icon: doc.icon,
+		expandByDefault: doc
+	};
+	if(reminders) response.reminders = reminders.map(reminder => reminderDocToResponse(reminder));
+	return response;
+};
+
+function reminderDocToResponse(doc: seedDB.Doc, category?: seedDB.Doc): {[key: string]: any} {
+	let response: {[key: string]: any} = {
+		id: hashids.encodeHex(doc._id),
+		title: doc.title,
+		description: doc.description,
+		updatedAt: doc.updatedAt,
+		createdAt: doc.createdAt,
+		dueAt: doc.dueAt,
+		duration: doc.duration,
+		wholeDay: doc.wholeDay,
+		notificationOffsets: doc.notificationOffsets,
+	};
+	if(category) response.category = categoryDocToResponse(category);
+	return response;
+}
 
 describe("The GraphQL Endpoint (concerning misc queries)", () => {
 	it("correctly gets current reminders", () => {
@@ -111,23 +136,7 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 					reminders[6],
 					reminders[7],
 					reminders[8]
-				].map(doc => ({
-					id: hashids.encodeHex(doc._id),
-					title: doc.title,
-					description: doc.description,
-					updatedAt: doc.updatedAt,
-					createdAt: doc.createdAt,
-					dueAt: doc.dueAt,
-					duration: doc.duration,
-					wholeDay: doc.wholeDay,
-					notificationOffsets: doc.notificationOffsets,
-					category: {
-						id: hashids.encodeHex(testCategory._id),
-						name: testCategory.name,
-						icon: testCategory.icon,
-						expandByDefault: testCategory.expandByDefault
-					}
-				})));
+				].map(doc => reminderDocToResponse(doc, testCategory)));
 			});
 			// Test 2
 			cy.graphQL(GET_CURRENT_REMINDERS, { from: new Date("2021-08-20T10:00:05.000Z") }).then(({ data }) => {
@@ -150,7 +159,6 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 					.to.have.members([
 						reminders[0],
 						reminders[1],
-						reminders[5],
 						reminders[6]
 					].map(reminder => hashids.encodeHex(reminder._id)));
 			});
@@ -166,7 +174,6 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 						reminders[2],
 						reminders[3],
 						reminders[4],
-						reminders[5]
 					].map(reminder => hashids.encodeHex(reminder._id)));
 			});
 			// Test 5
@@ -198,5 +205,126 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 		 *  => Use same reminders & tests from prev test, categorize some of them into testReminder,
 		 * 	   some into unownedReminder
 		 */
+		cy.task<seedDB.DocMap>("seedDB", "reminderHierarchyTest").then(docMap => {
+			const reminders = [
+				findInDocMap(docMap, "611eba8077f7e14488dad000"),
+				findInDocMap(docMap, "611eba8077f7e14488dad001"),
+				findInDocMap(docMap, "611eba8077f7e14488dad002"),
+				findInDocMap(docMap, "611eba8077f7e14488dad300"),
+				findInDocMap(docMap, "611eba8077f7e14488dad003"),
+				findInDocMap(docMap, "611eba8077f7e14488dad004"),
+				findInDocMap(docMap, "611eba8077f7e14488dad005"),
+				findInDocMap(docMap, "611eba8077f7e14488dad006"),
+				findInDocMap(docMap, "611eba8077f7e14488dad007"),
+			];
+			const testCategory = findInDocMap(docMap, "611eba8077f7e14488dad302");
+			const testCategory2 = findInDocMap(docMap, "611eba8077f7e14488dad100");
+			// Test 1
+			cy.graphQL(GET_REMINDER_HIERARCHY).then(({ data }) => {
+				const { categories, uncategorized } = data.getReminderHierarchy;
+				expect(uncategorized, "should return uncategorized reminders correctly").to.deep.equal([
+					reminders[0],
+					reminders[1],
+					reminders[4],
+					reminders[7]
+				].map(doc => reminderDocToResponse(doc)));
+				expect(categories, "should return categories correclty").to.deep.equal([
+					categoryDocToResponse(testCategory, [
+						reminders[2],
+						reminders[3],
+						reminders[8]
+					]),
+					categoryDocToResponse(testCategory2, [
+						reminders[6]
+					])
+				]);
+			});
+			// Test 2
+			cy.graphQL(GET_REMINDER_HIERARCHY, { from: new Date("2021-08-20T10:00:05.000Z") }).then(({ data }) => {
+				const { categories, uncategorized } = data.getReminderHierarchy;
+				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from below").to.have.members([
+					reminders[0],
+					reminders[1],
+					reminders[4],
+					reminders[7]
+				].map(reminder => hashids.encodeHex(reminder._id)));
+				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from below").to.deep.equal([
+					{
+						id: hashids.encodeHex(testCategory._id),
+						content: [
+							reminders[3],
+							reminders[8]
+						].map(rem => hashids.encodeHex(rem._id))
+					},
+					{
+						id: hashids.encodeHex(testCategory2._id),
+						content: [
+							reminders[6]
+						].map(rem => hashids.encodeHex(rem._id))
+					}
+				]);
+			});
+			// Test 3
+			cy.graphQL(GET_CURRENT_REMINDERS, { to: new Date("2021-09-20T02:00:00.000Z") }).then(({ data }) => {
+				const { categories, uncategorized } = data.getReminderHierarchy;
+				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from above").to.have.members([
+					reminders[0],
+					reminders[1],
+				].map(reminder => hashids.encodeHex(reminder._id)));
+				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from above").to.deep.equal([
+					{
+						id: hashids.encodeHex(testCategory2._id),
+						content: [
+							reminders[6]
+						].map(rem => hashids.encodeHex(rem._id))
+					}
+				]);
+			});
+			// Test 4
+			cy.graphQL(GET_CURRENT_REMINDERS, {
+				from: new Date("2021-08-20T10:00:10.000Z"),
+				to: new Date("2021-09-20T02:30:00.000Z")
+			}).then(({ data }) => {
+				const { categories, uncategorized } = data.getReminderHierarchy;
+				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from below").to.have.members([
+					reminders[0],
+					reminders[1],
+					reminders[4],
+				].map(reminder => hashids.encodeHex(reminder._id)));
+				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from below").to.deep.equal([
+					{
+						id: hashids.encodeHex(testCategory._id),
+						content: [
+							reminders[2],
+							reminders[3],
+						].map(rem => hashids.encodeHex(rem._id))
+					}
+				]);
+			});
+			// Test 5
+			cy.graphQL(GET_CURRENT_REMINDERS, {
+				id: hashids.encodeHex(testCategory._id),
+				from: new Date("2021-08-21T00:00:00.000Z")
+			}).then(({ data }) => {
+				const { categories, uncategorized } = data.getReminderHierarchy;
+				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from below").to.have.members([
+					reminders[7]
+				].map(reminder => hashids.encodeHex(reminder._id)));
+				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from below").to.deep.equal([
+					{
+						id: hashids.encodeHex(testCategory._id),
+						content: [
+							reminders[8]
+						].map(rem => hashids.encodeHex(rem._id))
+					},
+					{
+						id: hashids.encodeHex(testCategory2._id),
+						content: [
+							reminders[6]
+						].map(rem => hashids.encodeHex(rem._id))
+					}
+				]);
+			});
+		});
 	});
 });
