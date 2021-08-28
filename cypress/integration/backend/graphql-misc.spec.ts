@@ -65,9 +65,9 @@ function categoryDocToResponse(doc: seedDB.Doc, reminders?: seedDB.Doc): {[key: 
 		id: hashids.encodeHex(doc._id),
 		name: doc.name,
 		icon: doc.icon,
-		expandByDefault: doc
+		expandByDefault: doc.expandByDefault
 	};
-	if(reminders) response.reminders = reminders.map(reminder => reminderDocToResponse(reminder));
+	if(reminders) response.content = reminders.map(reminder => reminderDocToResponse(reminder));
 	return response;
 };
 
@@ -88,6 +88,10 @@ function reminderDocToResponse(doc: seedDB.Doc, category?: seedDB.Doc): {[key: s
 }
 
 describe("The GraphQL Endpoint (concerning misc queries)", () => {
+	before(() => {
+		cy.login();
+	});
+
 	it("correctly gets current reminders", () => {
 		/**
 		 *  Cases to check:
@@ -98,7 +102,8 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 		 * 			* should return the correct reminders
 		 * 			* should return reminders that don't start after the restriction
 		 * 			  but extend into it
-		 * 			* should return reminders that end exactly on the lower restriction
+		 * 			* shouldn't return reminders that end exactly on the lower restriction
+		 * 			* should return reminders that begin exactly on the lower restriction (even with 0 duration)
 		 * 		- Restricted from above
 		 * 			* should return the correct reminders
 		 * 			* shouldn't return reminders that begin exactly on the upper restriction
@@ -108,8 +113,6 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 		 * 		- Should return day-long reminders within the range
 		 * 			* day-long reminder's ranges should always be treated as starting
 		 * 			  on the start of the day
-		 * 
-		 * 	 
 		 */
 		 cy.task<seedDB.DocMap>("seedDB", "currentReminderTest").then(docMap => {
 			const reminders = [
@@ -159,7 +162,10 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 					.to.have.members([
 						reminders[0],
 						reminders[1],
-						reminders[6]
+						reminders[2],
+						reminders[3],
+						reminders[4],
+						reminders[8]
 					].map(reminder => hashids.encodeHex(reminder._id)));
 			});
 			// Test 4
@@ -170,10 +176,11 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 				const currentReminders = data.getCurrentReminders;
 				expect(currentReminders.map(reminder => reminder.id), "should correctly return reminders when bounded from both sides")
 					.to.have.members([
+						reminders[0],
 						reminders[1],
-						reminders[2],
-						reminders[3],
 						reminders[4],
+						reminders[6],
+						reminders[8]
 					].map(reminder => hashids.encodeHex(reminder._id)));
 			});
 			// Test 5
@@ -265,13 +272,42 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 				]);
 			});
 			// Test 3
-			cy.graphQL(GET_CURRENT_REMINDERS, { to: new Date("2021-09-20T02:00:00.000Z") }).then(({ data }) => {
+			cy.graphQL(GET_REMINDER_HIERARCHY, { to: new Date("2021-09-20T02:00:00.000Z") }).then(({ data }) => {
 				const { categories, uncategorized } = data.getReminderHierarchy;
 				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from above").to.have.members([
 					reminders[0],
 					reminders[1],
+					reminders[4]
 				].map(reminder => hashids.encodeHex(reminder._id)));
 				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from above").to.deep.equal([
+					{
+						id: hashids.encodeHex(testCategory._id),
+						content: [
+							reminders[2],
+							reminders[3],
+							reminders[8]
+						].map(rem => hashids.encodeHex(rem._id))
+					}
+				]);
+			});
+			// Test 4
+			cy.graphQL(GET_REMINDER_HIERARCHY, {
+				from: new Date("2021-08-20T10:00:10.000Z"),
+				to: new Date("2021-09-20T02:30:00.000Z")
+			}).then(({ data }) => {
+				const { categories, uncategorized } = data.getReminderHierarchy;
+				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from both sides").to.have.members([
+					reminders[0],
+					reminders[1],
+					reminders[4],
+				].map(reminder => hashids.encodeHex(reminder._id)));
+				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from both sides").to.deep.equal([
+					{
+						id: hashids.encodeHex(testCategory._id),
+						content: [
+							reminders[8]
+						].map(rem => hashids.encodeHex(rem._id))
+					},
 					{
 						id: hashids.encodeHex(testCategory2._id),
 						content: [
@@ -280,34 +316,13 @@ describe("The GraphQL Endpoint (concerning misc queries)", () => {
 					}
 				]);
 			});
-			// Test 4
-			cy.graphQL(GET_CURRENT_REMINDERS, {
-				from: new Date("2021-08-20T10:00:10.000Z"),
-				to: new Date("2021-09-20T02:30:00.000Z")
-			}).then(({ data }) => {
-				const { categories, uncategorized } = data.getReminderHierarchy;
-				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from below").to.have.members([
-					reminders[0],
-					reminders[1],
-					reminders[4],
-				].map(reminder => hashids.encodeHex(reminder._id)));
-				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from below").to.deep.equal([
-					{
-						id: hashids.encodeHex(testCategory._id),
-						content: [
-							reminders[2],
-							reminders[3],
-						].map(rem => hashids.encodeHex(rem._id))
-					}
-				]);
-			});
 			// Test 5
-			cy.graphQL(GET_CURRENT_REMINDERS, {
+			cy.graphQL(GET_REMINDER_HIERARCHY, {
 				id: hashids.encodeHex(testCategory._id),
 				from: new Date("2021-08-21T00:00:00.000Z")
 			}).then(({ data }) => {
 				const { categories, uncategorized } = data.getReminderHierarchy;
-				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from below").to.have.members([
+				expect(uncategorized.map(rem => rem.id), "should return uncategorized reminders correctly when bounded from below (?)").to.have.members([
 					reminders[7]
 				].map(reminder => hashids.encodeHex(reminder._id)));
 				expect(categories.map(cat => ({id: cat.id, content: cat.content.map(rem => rem.id)})), "should correctly return categories when bounded from below").to.deep.equal([

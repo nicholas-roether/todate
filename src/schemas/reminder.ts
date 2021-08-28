@@ -23,12 +23,14 @@ const ReminderSchema = new mongoose.Schema<Reminder>({
 	duration: {type: Number, default: 0},
 	wholeDay: {type: Boolean, default: false},
 	notificationOffsets: {type: [Number], default: []},
-	category: mongoose.Types.ObjectId
+	category: {type: mongoose.Types.ObjectId, ref: "Category" }
 }, {timestamps: true});
 
 
 export interface ReminderMethods {
 	findCategory: () => Promise<CategoryDocument | null>,
+	getStart: () => Date,
+	getEnd: () => Date
 }
 
 ReminderSchema.method({
@@ -38,6 +40,17 @@ ReminderSchema.method({
 		if(!collectionId) return null;
 		return db.Category.findById(collectionId).where({ owner: this.owner }).exec();
 	},
+	// getStart(): Date {
+	// 	if(!this.wholeDay) return this.dueAt;
+	// 	// return date from start of the day
+	// 	return new Date(86400000 * Math.floor(this.dueAt.getTime() / 86400000));
+	// },
+	// getEnd(): Date {
+	// 	let startDate = this.dueAt;
+	// 	if(this.wholeDay)
+	// 		startDate = new Date(86400000 * Math.floor(startDate.getTime() / 86400000));
+	// 	return new Date(startDate.getTime() + this.duration ?? 0);
+	// }
 });
 
 export interface ReminderQueryHelpers {
@@ -45,24 +58,58 @@ export interface ReminderQueryHelpers {
 	after(date: Date | null): mongoose.QueryWithHelpers<any, ReminderDocument, ReminderQueryHelpers>
 }
 
-ReminderSchema.query.before = function(date) {
+// To allow for correct chaining of query helpers w/o overriding the previous $or-query
+function combineOr(query: mongoose.Query<any, any>, newOr: {[key: string]: any}[]) {
+	const prevOr = query.getFilter().$or;
+	if(!prevOr) return { $or: newOr }
+	return {
+		$and: [
+			{ $or: newOr },
+			{ $or: prevOr }
+		]
+	}
+}
+
+ReminderSchema.query.before = function(date: Date) {
 	if(!date) return this;
-	return this.find({
-		dueAt: {
-			$lte: date
+	return this.where(combineOr(this, [
+		{
+			wholeDay: false,
+			dueAt: { $lt: date }
+		},
+		{
+			wholeDay: true,
+			$where: `86400000 * Math.floor(this.dueAt.getTime() / 86400000) < ${date.getTime()}`,
 		}
-	});
+	]));
 }
 
 ReminderSchema.query.after = function(date) {
 	if(!date) return this;
-	const duration = this.duration ?? 0;
-	date = new Date(date.getTime() + duration);
-	return this.find({
-		dueAt: {
-			$gte: date
+	return this.where(combineOr(this, [
+		{
+			wholeDay: false,
+			$or: [
+				{
+					duration: 0,
+					dueAt: {
+						// Include zero-duration events that start on the border
+						$gte: date
+					}
+				},
+				{
+					duration: {
+						$gt: 0
+					},
+					$where: `${date.getTime()} < this.dueAt.getTime() + this.duration`
+				}
+			]
+		},
+		{
+			wholeDay: true,
+			$where: `${date.getTime()} < 86400000 * (Math.floor(this.dueAt.getTime() / 86400000) + 1)`
 		}
-	});
+	]));
 }
 
 export type ReminderModelType = mongoose.Model<Reminder, ReminderQueryHelpers, ReminderMethods>;

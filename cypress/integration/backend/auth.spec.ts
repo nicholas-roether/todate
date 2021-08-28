@@ -3,9 +3,10 @@ describe("Auth0", () => {
 		cy.login();
 	});
 
-	it("logs in", () => {
+	it("logs in correctly", () => {
 		cy.request("/api/auth/me").then(({ body: user }) => {
-			expect(user.email).to.equal(Cypress.env("auth0Username"));
+			expect(user, "should log in").to.not.be.null;
+			expect(user.email, "should log in to the correct account").to.equal(Cypress.env("auth0Username"));
 		})
 	});
 })

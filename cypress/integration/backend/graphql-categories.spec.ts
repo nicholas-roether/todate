@@ -59,13 +59,11 @@ const UPDATE_CATEGORY = gql`
 
 const CREATE_CATEGORY = gql`
 	mutation(
-		$id: ID!
-		$name: String
+		$name: String!
 		$icon: String
-		$expandByDefault: String
+		$expandByDefault: Boolean
 	) {
 		createCategory(
-			id: $id
 			name: $name
 			icon: $icon
 			expandByDefault: $expandByDefault
@@ -82,6 +80,10 @@ const DELETE_CATEGORY = gql`
 `;
 
 describe("The GraphQL Endpoint (concerning categories)", () => {
+	before(() => {
+		cy.login();
+	});
+
 	it("correctly reads categories", () => {
 		cy.task<seedDB.DocMap>("seedDB", "categoryReadTest").then(docMap => {
 			cy.graphQL(CATEGORY_EXISTS, { id: hashids.encodeHex("611eba8077f7e14488dad302") }).then(({ data }) => {
@@ -166,7 +168,7 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 			// Test 2
 			cy.graphQL(GET_CATEGORY, {
 				id: hashids.encodeHex(testCategory._id),
-				from: new Date("2021-08-20T10:00:05.000Z")
+				remindersFrom: new Date("2021-08-20T10:00:05.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
 				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from below")
@@ -183,41 +185,43 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 			// Test 3
 			cy.graphQL(GET_CATEGORY, {
 				id: hashids.encodeHex(testCategory._id),
-				to: new Date("2021-09-20T02:00:00.000Z")
+				remindersTo: new Date("2021-09-20T02:00:00.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
 				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from above")
 					.to.have.members([
 						reminders[0],
 						reminders[1],
-						reminders[5],
-						reminders[6]
+						reminders[2],
+						reminders[3],
+						reminders[4]
 					].map(reminder => hashids.encodeHex(reminder._id)));
 			});
 			// Test 4
 			cy.graphQL(GET_CATEGORY, {
 				id: hashids.encodeHex(testCategory._id),
-				from: new Date("2021-08-20T10:00:10.000Z"),
-				to: new Date("2021-09-20T02:30:00.000Z")
+				remindersFrom: new Date("2021-08-20T10:00:10.000Z"),
+				remindersTo: new Date("2021-09-20T02:30:00.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
+				// reminder[3] should not be included; reminders with nonzero duration that
+				// end on the lower restriction should not be returned
 				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from both sides")
 					.to.have.members([
+						reminders[0],
 						reminders[1],
-						reminders[2],
-						reminders[3],
 						reminders[4],
-						reminders[5]
+						reminders[6],
 					].map(reminder => hashids.encodeHex(reminder._id)));
 			});
 			// Test 5
 			cy.graphQL(GET_CATEGORY, { id: hashids.encodeHex("611eba8077f7e14488dad303") }).then(({ data }) => {
-				expect(data, "should not return unowned categories").to.be.null;
+				expect(data.getCategory, "should not return unowned categories").to.be.null;
 			});
 			// Test 6
 			cy.graphQL(GET_CATEGORY, {
 				id: hashids.encodeHex(testCategory._id),
-				from: new Date("2021-08-21T00:00:00.000Z")
+				remindersFrom: new Date("2021-08-21T00:00:00.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
 				expect(category.content.map(reminder => reminder.id), "should correctly handle day-long reminders w/ weird dueAt values")
@@ -266,6 +270,22 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 		});
 	});
 
+	it("correctly creates categories", () => {
+		const testCreation = {
+			name: "Created Category",
+			icon: "birthday",
+			expandByDefault: false
+		};
+		cy.graphQL(CREATE_CATEGORY, testCreation).then(({ data }) => {
+			const id = hashids.decodeHex(data.createCategory.id);
+			cy.task<any>("findDBEntry", `categories:${id}`).then(doc => {
+				expect(doc.name, "should correctly set name").to.equal(testCreation.name);
+				expect(doc.icon, "should correctly set icon").to.equal(testCreation.icon);
+				expect(doc.expandByDefault, "should correctly set expandByDefault").to.equal(testCreation.expandByDefault);
+			});
+		});
+	});
+
 	it("correctly deletes categories", () => {
 		cy.task<seedDB.DocMap>("seedDB", "categoryDeleteTest").then(docMap => {
 			const testCategory = findInDocMap(docMap, "611eba8077f7e14488dad302");
@@ -295,7 +315,7 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				cy.task<any>("findDBEntry", `categories:${unownedCategory._id}`).then(doc => {
 					expect(doc, "shouldn't delete unowned categories").to.not.be.null;
 				});
-				cy.task<any>("findDB", `reminders:${testReminders[3]._id}`).then(doc => {
+				cy.task<any>("findDBEntry", `reminders:${testReminders[3]._id}`).then(doc => {
 					expect(doc.category, "shouldn't affect reminders when trying to delete unowned categories")
 						.to.equal(testReminders[3].category);
 				});

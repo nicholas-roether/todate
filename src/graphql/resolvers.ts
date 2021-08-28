@@ -170,7 +170,7 @@ const resolvers = {
 			if(!doc || !user.idMatches(doc.owner)) throw Error("Category does not exist or you don't have access to it");
 			if(name) doc.name = name;
 			if(icon) doc.icon = icon;
-			if(expandByDefault) doc.expandByDefault = expandByDefault;
+			if(expandByDefault !== null) doc.expandByDefault = expandByDefault;
 			await doc.save();
 			return doc;
 		},
@@ -185,9 +185,11 @@ const resolvers = {
 		async deleteCategory(_, { id }, { user }) {
 			if(!user) throw new Error("Not logged in");
 			const db = await Database.get();
-			const doc = await db.Category.findById(hashids.decodeHex(id)).exec();
+			const decodedId = hashids.decodeHex(id);
+			const doc = await db.Category.findById(decodedId).exec();
 			if(!doc || !user.idMatches(doc.owner)) throw Error("Category does not exist or you don't have access to it");
 			await doc.delete();
+			await db.Reminder.updateMany({ category: decodedId }, { category: null });
 			return id;
 		}
 	}
