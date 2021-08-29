@@ -18,15 +18,15 @@ module.exports = (on, config) => {
 		 * @param {string} path The dataset path to seed
 		 * @returns {Promise<seedDB.DocMap>} The seeded document map
 		 */
-		seedDB: path => {
+		seedDB: (path) => {
 			return seedDB(mongoUri, dbSeed, path);
 		},
 		/**
 		 * @param {string} identifier The entry identifier: <collection>:<id>
 		 * @returns {Promise<any>} The document
 		 */
-		findDBEntry: identifier => {
+		findDBEntry: (identifier) => {
 			return findDBEntry(mongoUri, identifier);
 		}
 	});
-}
+};

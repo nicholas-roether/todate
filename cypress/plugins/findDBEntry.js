@@ -14,8 +14,8 @@ async function findDBEntry(mongoUri, identifier) {
 	await client.connect();
 	const db = client.db(dbName);
 	const collection = db.collection(collectionName);
-	if(!(id instanceof ObjectId)) id = new ObjectId(id);
-	const doc = await collection.findOne({ "_id": id });
+	if (!(id instanceof ObjectId)) id = new ObjectId(id);
+	const doc = await collection.findOne({ _id: id });
 	return doc ?? null;
 }
 

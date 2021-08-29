@@ -4,6 +4,6 @@
 	"bracketSpacing": true,
 	"jsxBracketSameLine": false,
 	"trailingComma": "none",
-	"endOfLine": "auto"
-  }
-  
+	"endOfLine": "auto",
+	"arrowParens": "always"
+}

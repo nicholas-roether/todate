@@ -4,17 +4,13 @@ import { findInDocMap, gql } from "../../util";
 const hashids = new Hashids("todate");
 
 const CATEGORY_EXISTS = gql`
-	query($id: ID!) {
+	query ($id: ID!) {
 		categoryExists(id: $id)
 	}
 `;
 
 const GET_CATEGORY = gql`
-	query(
-		$id: ID!
-		$remindersFrom: Date
-		$remindersTo: Date
-	) {
+	query ($id: ID!, $remindersFrom: Date, $remindersTo: Date) {
 		getCategory(
 			id: $id
 			remindersFrom: $remindersFrom
@@ -40,7 +36,7 @@ const GET_CATEGORY = gql`
 `;
 
 const UPDATE_CATEGORY = gql`
-	mutation(
+	mutation (
 		$id: ID!
 		$name: String
 		$icon: String
@@ -58,11 +54,7 @@ const UPDATE_CATEGORY = gql`
 `;
 
 const CREATE_CATEGORY = gql`
-	mutation(
-		$name: String!
-		$icon: String
-		$expandByDefault: Boolean
-	) {
+	mutation ($name: String!, $icon: String, $expandByDefault: Boolean) {
 		createCategory(
 			name: $name
 			icon: $icon
@@ -74,7 +66,7 @@ const CREATE_CATEGORY = gql`
 `;
 
 const DELETE_CATEGORY = gql`
-	mutation($id: ID!) {
+	mutation ($id: ID!) {
 		deleteCategory(id: $id)
 	}
 `;
@@ -85,15 +77,30 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 	});
 
 	it("correctly reads categories", () => {
-		cy.task<seedDB.DocMap>("seedDB", "categoryReadTest").then(docMap => {
-			cy.graphQL(CATEGORY_EXISTS, { id: hashids.encodeHex("611eba8077f7e14488dad302") }).then(({ data }) => {
-				expect(data.categoryExists, "should return true if category exists").to.be.true;
+		cy.task<seedDB.DocMap>("seedDB", "categoryReadTest").then((docMap) => {
+			cy.graphQL(CATEGORY_EXISTS, {
+				id: hashids.encodeHex("611eba8077f7e14488dad302")
+			}).then(({ data }) => {
+				expect(
+					data.categoryExists,
+					"should return true if category exists"
+				).to.be.true;
 			});
-			cy.graphQL(CATEGORY_EXISTS, { id: hashids.encodeHex("611eba8077f7e14488dad999") }).then(({ data }) => {
-				expect(data.categoryExists, "should return false if category doesn't exist").to.be.false;
+			cy.graphQL(CATEGORY_EXISTS, {
+				id: hashids.encodeHex("611eba8077f7e14488dad999")
+			}).then(({ data }) => {
+				expect(
+					data.categoryExists,
+					"should return false if category doesn't exist"
+				).to.be.false;
 			});
-			cy.graphQL(CATEGORY_EXISTS, { id: hashids.encodeHex("611eba8077f7e14488dad303") }).then(({ data }) => {
-				expect(data.categoryExists, "should return false if category isn't owned").to.be.false;
+			cy.graphQL(CATEGORY_EXISTS, {
+				id: hashids.encodeHex("611eba8077f7e14488dad303")
+			}).then(({ data }) => {
+				expect(
+					data.categoryExists,
+					"should return false if category isn't owned"
+				).to.be.false;
 			});
 			/**
 			 * 	Should correctly get reminders:
@@ -108,22 +115,25 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 			 * 			  restriction; the test returns all reminders in the range, including the one on the restriction.
 			 * 		- Should not get unowned reminders
 			 * 		- If the lower restriction is exactly the duration of a reminder after it's due date, it should not be returned.
-			 * 
+			 *
 			 * 				0   1   2   3     4   5   6   7     8
 			 * 	Test 1:		+   +   *   ^---  *   °   *   *     +
 			 * 	Test 2: 	+   +   *   ^-|-  *   °   *   *     +
 			 * 	Test 3:		+   +   *   ^---  *   °   *|  *    (+)
 			 * 	Test 4:		+   +   *   ^--- |*   °   * | *    (+)
 			 * 	Test 5: (test for unowned)
-			 * 
+			 *
 			 *  * some reminder  			*--- some reminder w/ a duration
 			 *  ^ the basic test reminder	° an unowned reminder
 			 *  + a day-long reminder		(+) a day-long reminder outside the range
-			 * 
-			 * 
+			 *
+			 *
 			 *  Test 6: Make sure that reminder 1 doesn't bleed over into the next day
 			 */
-			const testCategory = findInDocMap(docMap, "611eba8077f7e14488dad302");
+			const testCategory = findInDocMap(
+				docMap,
+				"611eba8077f7e14488dad302"
+			);
 			const reminders = [
 				findInDocMap(docMap, "611eba8077f7e14488dad000"),
 				findInDocMap(docMap, "611eba8077f7e14488dad001"),
@@ -135,35 +145,54 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				findInDocMap(docMap, "611eba8077f7e14488dad006"),
 				findInDocMap(docMap, "611eba8077f7e14488dad007"),
 				findInDocMap(docMap, "611eba8077f7e14488dad008"),
-				findInDocMap(docMap, "611eba8077f7e14488dad009"),
+				findInDocMap(docMap, "611eba8077f7e14488dad009")
 			];
 			// Test 1
-			cy.graphQL(GET_CATEGORY, { id: hashids.encodeHex(testCategory._id) }).then(({ data }) => {
+			cy.graphQL(GET_CATEGORY, {
+				id: hashids.encodeHex(testCategory._id)
+			}).then(({ data }) => {
 				const category = data.getCategory;
-				expect(category.id, "should return the correct category").to.equal(hashids.encodeHex(testCategory._id));
-				expect(category.name, "should correctly return category name").to.equal(testCategory.name);
-				expect(category.icon, "should correctly return category icon").to.equal(testCategory.icon);
-				expect(category.expandByDefault, "should correctly return expandByDefault from category").to.equal(testCategory.expandByDefault);
-				expect(category.content, "content should have correct members").to.deep.equal([
-					reminders[0],
-					reminders[1],
-					reminders[2],
-					reminders[3],
-					reminders[4],
-					reminders[6],
-					reminders[7],
-					reminders[8]
-				].map(doc => ({
-					id: hashids.encodeHex(doc._id),
-					title: doc.title,
-					description: doc.description,
-					updatedAt: doc.updatedAt,
-					createdAt: doc.createdAt,
-					dueAt: doc.dueAt,
-					duration: doc.duration,
-					wholeDay: doc.wholeDay,
-					notificationOffsets: doc.notificationOffsets
-				})));
+				expect(
+					category.id,
+					"should return the correct category"
+				).to.equal(hashids.encodeHex(testCategory._id));
+				expect(
+					category.name,
+					"should correctly return category name"
+				).to.equal(testCategory.name);
+				expect(
+					category.icon,
+					"should correctly return category icon"
+				).to.equal(testCategory.icon);
+				expect(
+					category.expandByDefault,
+					"should correctly return expandByDefault from category"
+				).to.equal(testCategory.expandByDefault);
+				expect(
+					category.content,
+					"content should have correct members"
+				).to.deep.equal(
+					[
+						reminders[0],
+						reminders[1],
+						reminders[2],
+						reminders[3],
+						reminders[4],
+						reminders[6],
+						reminders[7],
+						reminders[8]
+					].map((doc) => ({
+						id: hashids.encodeHex(doc._id),
+						title: doc.title,
+						description: doc.description,
+						updatedAt: doc.updatedAt,
+						createdAt: doc.createdAt,
+						dueAt: doc.dueAt,
+						duration: doc.duration,
+						wholeDay: doc.wholeDay,
+						notificationOffsets: doc.notificationOffsets
+					}))
+				);
 			});
 			// Test 2
 			cy.graphQL(GET_CATEGORY, {
@@ -171,8 +200,11 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				remindersFrom: new Date("2021-08-20T10:00:05.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
-				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from below")
-					.to.have.members([
+				expect(
+					category.content.map((reminder) => reminder.id),
+					"should correctly return reminders when bounded from below"
+				).to.have.members(
+					[
 						reminders[0],
 						reminders[1],
 						reminders[3],
@@ -180,7 +212,8 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 						reminders[6],
 						reminders[7],
 						reminders[8]
-					].map(reminder => hashids.encodeHex(reminder._id)));
+					].map((reminder) => hashids.encodeHex(reminder._id))
+				);
 			});
 			// Test 3
 			cy.graphQL(GET_CATEGORY, {
@@ -188,14 +221,18 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				remindersTo: new Date("2021-09-20T02:00:00.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
-				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from above")
-					.to.have.members([
+				expect(
+					category.content.map((reminder) => reminder.id),
+					"should correctly return reminders when bounded from above"
+				).to.have.members(
+					[
 						reminders[0],
 						reminders[1],
 						reminders[2],
 						reminders[3],
 						reminders[4]
-					].map(reminder => hashids.encodeHex(reminder._id)));
+					].map((reminder) => hashids.encodeHex(reminder._id))
+				);
 			});
 			// Test 4
 			cy.graphQL(GET_CATEGORY, {
@@ -206,17 +243,24 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				const category = data.getCategory;
 				// reminder[3] should not be included; reminders with nonzero duration that
 				// end on the lower restriction should not be returned
-				expect(category.content.map(reminder => reminder.id), "should correctly return reminders when bounded from both sides")
-					.to.have.members([
+				expect(
+					category.content.map((reminder) => reminder.id),
+					"should correctly return reminders when bounded from both sides"
+				).to.have.members(
+					[
 						reminders[0],
 						reminders[1],
 						reminders[4],
-						reminders[6],
-					].map(reminder => hashids.encodeHex(reminder._id)));
+						reminders[6]
+					].map((reminder) => hashids.encodeHex(reminder._id))
+				);
 			});
 			// Test 5
-			cy.graphQL(GET_CATEGORY, { id: hashids.encodeHex("611eba8077f7e14488dad303") }).then(({ data }) => {
-				expect(data.getCategory, "should not return unowned categories").to.be.null;
+			cy.graphQL(GET_CATEGORY, {
+				id: hashids.encodeHex("611eba8077f7e14488dad303")
+			}).then(({ data }) => {
+				expect(data.getCategory, "should not return unowned categories")
+					.to.be.null;
 			});
 			// Test 6
 			cy.graphQL(GET_CATEGORY, {
@@ -224,50 +268,81 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 				remindersFrom: new Date("2021-08-21T00:00:00.000Z")
 			}).then(({ data }) => {
 				const category = data.getCategory;
-				expect(category.content.map(reminder => reminder.id), "should correctly handle day-long reminders w/ weird dueAt values")
-					.to.have.members([
-						reminders[6],
-						reminders[7],
-						reminders[8]
-					].map(reminder => hashids.encodeHex(reminder._id)));
+				expect(
+					category.content.map((reminder) => reminder.id),
+					"should correctly handle day-long reminders w/ weird dueAt values"
+				).to.have.members(
+					[reminders[6], reminders[7], reminders[8]].map((reminder) =>
+						hashids.encodeHex(reminder._id)
+					)
+				);
 			});
 		});
 	});
 
 	it("correctly updates categories", () => {
-		cy.task<seedDB.DocMap>("seedDB", "categoryUpdateTest").then(docMap => {
-			const testUpdate = {
-				name: "Updated Category",
-				icon: "default",
-				expandByDefault: false
-			};
-			cy.graphQL(UPDATE_CATEGORY, {
-				id: hashids.encodeHex("611eba8077f7e14488dad302"),
-				...testUpdate
-			}).then(() => {
-				cy.task<any>("findDBEntry", "categories:611eba8077f7e14488dad302").then(doc => {
-					expect(doc.name, "should correctly update name").to.equal(testUpdate.name);
-					expect(doc.icon, "should correctly update icon").to.equal(testUpdate.icon);
-					expect(doc.expandByDefault, "should correctly update expandByDefault").to.equal(testUpdate.expandByDefault);
+		cy.task<seedDB.DocMap>("seedDB", "categoryUpdateTest").then(
+			(docMap) => {
+				const testUpdate = {
+					name: "Updated Category",
+					icon: "default",
+					expandByDefault: false
+				};
+				cy.graphQL(UPDATE_CATEGORY, {
+					id: hashids.encodeHex("611eba8077f7e14488dad302"),
+					...testUpdate
+				}).then(() => {
+					cy.task<any>(
+						"findDBEntry",
+						"categories:611eba8077f7e14488dad302"
+					).then((doc) => {
+						expect(
+							doc.name,
+							"should correctly update name"
+						).to.equal(testUpdate.name);
+						expect(
+							doc.icon,
+							"should correctly update icon"
+						).to.equal(testUpdate.icon);
+						expect(
+							doc.expandByDefault,
+							"should correctly update expandByDefault"
+						).to.equal(testUpdate.expandByDefault);
+					});
 				});
-			});
-			cy.graphQL(UPDATE_CATEGORY, {
-				id: hashids.encodeHex("611eba8077f7e14488dad999"),
-				...testUpdate
-			}).then(({ errors }) => {
-				expect(errors.length, "should throw error when trying to update non-existent category").to.be.greaterThan(0);
-			});
-			const unownedCategory = findInDocMap(docMap, "611eba8077f7e14488dad303");
-			cy.graphQL(UPDATE_CATEGORY, {
-				id: hashids.encodeHex(unownedCategory._id),
-				...testUpdate
-			}).then(({ errors }) => {
-				expect(errors.length, "should throw error when trying to update unowned category").to.be.greaterThan(0);
-				cy.task<any>("findDBEntry", `categories:${unownedCategory._id}`).then(doc => {
-					expect(doc, "shouldn't update unowned categories").to.deep.equal(unownedCategory);
+				cy.graphQL(UPDATE_CATEGORY, {
+					id: hashids.encodeHex("611eba8077f7e14488dad999"),
+					...testUpdate
+				}).then(({ errors }) => {
+					expect(
+						errors.length,
+						"should throw error when trying to update non-existent category"
+					).to.be.greaterThan(0);
 				});
-			});
-		});
+				const unownedCategory = findInDocMap(
+					docMap,
+					"611eba8077f7e14488dad303"
+				);
+				cy.graphQL(UPDATE_CATEGORY, {
+					id: hashids.encodeHex(unownedCategory._id),
+					...testUpdate
+				}).then(({ errors }) => {
+					expect(
+						errors.length,
+						"should throw error when trying to update unowned category"
+					).to.be.greaterThan(0);
+					cy.task<any>(
+						"findDBEntry",
+						`categories:${unownedCategory._id}`
+					).then((doc) => {
+						expect(
+							doc,
+							"shouldn't update unowned categories"
+						).to.deep.equal(unownedCategory);
+					});
+				});
+			}
+		);
 	});
 
 	it("correctly creates categories", () => {
@@ -278,48 +353,100 @@ describe("The GraphQL Endpoint (concerning categories)", () => {
 		};
 		cy.graphQL(CREATE_CATEGORY, testCreation).then(({ data }) => {
 			const id = hashids.decodeHex(data.createCategory.id);
-			cy.task<any>("findDBEntry", `categories:${id}`).then(doc => {
-				expect(doc.name, "should correctly set name").to.equal(testCreation.name);
-				expect(doc.icon, "should correctly set icon").to.equal(testCreation.icon);
-				expect(doc.expandByDefault, "should correctly set expandByDefault").to.equal(testCreation.expandByDefault);
+			cy.task<any>("findDBEntry", `categories:${id}`).then((doc) => {
+				expect(doc.name, "should correctly set name").to.equal(
+					testCreation.name
+				);
+				expect(doc.icon, "should correctly set icon").to.equal(
+					testCreation.icon
+				);
+				expect(
+					doc.expandByDefault,
+					"should correctly set expandByDefault"
+				).to.equal(testCreation.expandByDefault);
 			});
 		});
 	});
 
 	it("correctly deletes categories", () => {
-		cy.task<seedDB.DocMap>("seedDB", "categoryDeleteTest").then(docMap => {
-			const testCategory = findInDocMap(docMap, "611eba8077f7e14488dad302");
-			const unownedCategory = findInDocMap(docMap, "611eba8077f7e14488dad303");
-			const testReminders = [
-				findInDocMap(docMap, "611eba8077f7e14488dad300"),
-				findInDocMap(docMap, "611eba8077f7e14488dad000"),
-				findInDocMap(docMap, "611eba8077f7e14488dad001"),
-				findInDocMap(docMap, "611eba8077f7e14488dad002")
-			]
-			cy.graphQL(DELETE_CATEGORY, { id: hashids.encodeHex(testCategory._id) }).then(() => {
-				cy.task<any>("findDBEntry", `categories:${testCategory._id}`).then(doc => {
-					expect(doc, "should delete category").to.be.null;
+		cy.task<seedDB.DocMap>("seedDB", "categoryDeleteTest").then(
+			(docMap) => {
+				const testCategory = findInDocMap(
+					docMap,
+					"611eba8077f7e14488dad302"
+				);
+				const unownedCategory = findInDocMap(
+					docMap,
+					"611eba8077f7e14488dad303"
+				);
+				const testReminders = [
+					findInDocMap(docMap, "611eba8077f7e14488dad300"),
+					findInDocMap(docMap, "611eba8077f7e14488dad000"),
+					findInDocMap(docMap, "611eba8077f7e14488dad001"),
+					findInDocMap(docMap, "611eba8077f7e14488dad002")
+				];
+				cy.graphQL(DELETE_CATEGORY, {
+					id: hashids.encodeHex(testCategory._id)
+				}).then(() => {
+					cy.task<any>(
+						"findDBEntry",
+						`categories:${testCategory._id}`
+					).then((doc) => {
+						expect(doc, "should delete category").to.be.null;
+					});
+					cy.task<any>(
+						"findDBEntry",
+						`reminders:${testReminders[0]._id}`
+					).then((doc) => {
+						expect(
+							doc.category,
+							"should remove deleted category from reminders"
+						).to.be.null;
+					});
+					cy.task<any>(
+						"findDBEntry",
+						`reminders:${testReminders[1]._id}`
+					).then((doc) => {
+						expect(
+							doc.category,
+							"should not affect unrelated reminders"
+						).to.equal(testReminders[1].category);
+					});
+					cy.task<any>(
+						"findDBEntry",
+						`reminders:${testReminders[2]._id}`
+					).then((doc) => {
+						expect(
+							doc.category,
+							"should remove deleted category even from unowned reminders"
+						).to.be.null;
+					});
 				});
-				cy.task<any>("findDBEntry", `reminders:${testReminders[0]._id}`).then(doc => {
-					expect(doc.category, "should remove deleted category from reminders").to.be.null;
+				cy.graphQL(DELETE_CATEGORY, {
+					id: hashids.encodeHex(unownedCategory._id)
+				}).then(({ errors }) => {
+					expect(
+						errors.length,
+						"should throw an error when trying to delete unowned category"
+					).to.be.greaterThan(0);
+					cy.task<any>(
+						"findDBEntry",
+						`categories:${unownedCategory._id}`
+					).then((doc) => {
+						expect(doc, "shouldn't delete unowned categories").to
+							.not.be.null;
+					});
+					cy.task<any>(
+						"findDBEntry",
+						`reminders:${testReminders[3]._id}`
+					).then((doc) => {
+						expect(
+							doc.category,
+							"shouldn't affect reminders when trying to delete unowned categories"
+						).to.equal(testReminders[3].category);
+					});
 				});
-				cy.task<any>("findDBEntry", `reminders:${testReminders[1]._id}`).then(doc => {
-					expect(doc.category, "should not affect unrelated reminders").to.equal(testReminders[1].category);
-				});
-				cy.task<any>("findDBEntry", `reminders:${testReminders[2]._id}`).then(doc => {
-					expect(doc.category, "should remove deleted category even from unowned reminders").to.be.null;
-				})
-			});
-			cy.graphQL(DELETE_CATEGORY, { id: hashids.encodeHex(unownedCategory._id) }).then(({ errors }) => {
-				expect(errors.length, "should throw an error when trying to delete unowned category").to.be.greaterThan(0);
-				cy.task<any>("findDBEntry", `categories:${unownedCategory._id}`).then(doc => {
-					expect(doc, "shouldn't delete unowned categories").to.not.be.null;
-				});
-				cy.task<any>("findDBEntry", `reminders:${testReminders[3]._id}`).then(doc => {
-					expect(doc.category, "shouldn't affect reminders when trying to delete unowned categories")
-						.to.equal(testReminders[3].category);
-				});
-			});
-		});
+			}
+		);
 	});
 });
