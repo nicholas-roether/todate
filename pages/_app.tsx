@@ -4,8 +4,12 @@ import Providers from "../src/frontend/components/providers";
 
 import "../styles/base.css";
 
-const App = ({Component, pageProps}: AppProps) => {
-	return <Providers><Component {...pageProps} /></Providers>
-}
+const App = ({ Component, pageProps }: AppProps) => {
+	return (
+		<Providers>
+			<Component {...pageProps} />
+		</Providers>
+	);
+};
 
 export default App;

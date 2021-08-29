@@ -12,24 +12,24 @@ const dayMonthDateFormat = new Intl.DateTimeFormat([], {
 	month: "numeric"
 });
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
 	container: {
 		display: "flex",
 		flexDirection: "column",
-		height: "100%",
+		height: "100%"
 	},
 	grid: {
-		flex: 1,
+		flex: 1
 	},
 	item: {
 		width: "calc(100% / 7)"
 	},
 	weekdays: {
-		display: "flex",
+		display: "flex"
 	},
 	line: {
 		color: theme.palette.primary.main,
-		margin: 0,
+		margin: 0
 	},
 	headerItem: {
 		width: "calc(100% / 7)",
@@ -38,10 +38,10 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export interface CalendarViewProps {
-	date: Date
+	date: Date;
 }
 
-const CalendarView = ({date}: CalendarViewProps) => {
+const CalendarView = ({ date }: CalendarViewProps) => {
 	// // TODO localization
 	// const weekdayNames = [
 	// 	"Monday",
@@ -56,24 +56,30 @@ const CalendarView = ({date}: CalendarViewProps) => {
 	const startDate = new Date();
 	startDate.setFullYear(date.getFullYear(), date.getMonth(), 0);
 	startDate.setDate(startDate.getDate() - startDate.getDay() + 1);
-	let weekdayNames = [];
-	for(let i = 0; i < 7; i++)
-		weekdayNames.push(weekdayDateFormat.format(new Date(startDate.getTime() + 86400000 * i)));
+	const weekdayNames = [];
+	for (let i = 0; i < 7; i++)
+		weekdayNames.push(
+			weekdayDateFormat.format(
+				new Date(startDate.getTime() + 86400000 * i)
+			)
+		);
 
-	let cells: JSX.Element[] = [];
-	for(let i = 0; i < 42; i++) {
+	const cells: JSX.Element[] = [];
+	for (let i = 0; i < 42; i++) {
 		const tileDate = new Date(startDate.getTime() + 86400000 * i);
 		cells.push(
 			<Grid item key={i} className={classes.item}>
 				<CalendarViewTile
 					day={tileDate.getDate()}
-					month={tileDate.getDate() === 1 ? tileDate.getMonth() : null}
+					month={
+						tileDate.getDate() === 1 ? tileDate.getMonth() : null
+					}
 					mainMonth={tileDate.getMonth() === date.getMonth()}
 				>
 					test
 				</CalendarViewTile>
 			</Grid>
-		)
+		);
 	}
 	return (
 		<div className={classes.container}>
@@ -91,7 +97,7 @@ const CalendarView = ({date}: CalendarViewProps) => {
 				{cells}
 			</Grid>
 		</div>
-	)
+	);
 };
 
 export default CalendarView;

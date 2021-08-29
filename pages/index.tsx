@@ -9,6 +9,6 @@ const Index = () => {
 			<CalendarView date={new Date()} />
 		</Page>
 	);
-}
+};
 
 export default Index;

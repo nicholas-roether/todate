@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, makeStyles, Typography } from "@material-ui/core";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	makeStyles,
+	Typography
+} from "@material-ui/core";
 import React, { PropsWithChildren } from "react";
 import { EventHandler } from "react";
 
@@ -12,7 +18,7 @@ const dateFormatDayMonth = new Intl.DateTimeFormat([], {
 	month: "numeric"
 });
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
 	containerNotMain: {
 		width: "100%",
 		height: "100%",
@@ -34,11 +40,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface CalendarViewTileProps {
-	day: number,
-	month?: number,
-	mainMonth?: boolean,
-	onClick?: EventHandler<React.MouseEvent>,
-};
+	day: number;
+	month?: number;
+	mainMonth?: boolean;
+	onClick?: EventHandler<React.MouseEvent>;
+}
 
 const CalendarViewTile = ({
 	day,
@@ -51,7 +57,7 @@ const CalendarViewTile = ({
 	const date = new Date();
 	date.setDate(day);
 	let dayText = "";
-	if(month !== null && month !== undefined) {
+	if (month !== null && month !== undefined) {
 		date.setMonth(month);
 		dayText = dateFormatDayMonth.format(date);
 	} else {
@@ -68,12 +74,10 @@ const CalendarViewTile = ({
 		>
 			<CardContent>
 				<Typography className={classes.dayText}>{dayText}</Typography>
-				<main className={classes.main}>
-					{children}
-				</main>
+				<main className={classes.main}>{children}</main>
 			</CardContent>
 		</Card>
-	)
-}
+	);
+};
 
 export default CalendarViewTile;
