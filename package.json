@@ -32,6 +32,7 @@
 	"devDependencies": {
 		"@types/auth0": "^2.33.4",
 		"@types/graphql-date": "^1.0.5",
+		"@types/next": "^9.0.0",
 		"@types/node": "^16.6.0",
 		"@types/react": "^17.0.17",
 		"cypress": "^8.3.0",
