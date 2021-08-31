@@ -8,9 +8,7 @@ import defaultTheme from "../themes/default";
 const Providers = ({ children }: PropsWithChildren<{}>) => (
 	<UserProvider>
 		<ApolloProvider client={apolloClient}>
-			<ThemeProvider theme={defaultTheme}>
-				{children}
-			</ThemeProvider>
+			<ThemeProvider theme={defaultTheme}>{children}</ThemeProvider>
 		</ApolloProvider>
 	</UserProvider>
 );

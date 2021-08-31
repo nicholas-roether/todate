@@ -12,16 +12,21 @@ const apolloServer = new ApolloServer({
 	resolvers,
 	context({ req, res }) {
 		const session = getSession(req, res);
-		return { 
+		if (!session)
+			throw new Error(
+				"Failed to start Apollo server: Couldn't get session"
+			);
+		return {
 			session,
 			user: User.fromSession(session)
 		};
 	}
 });
 
-
 const handleGraphQL: () => NextApiHandler = () => {
-	const handlerPromise = apolloServer.start().then(() => apolloServer.createHandler({ path: "/api/graphql" }));
+	const handlerPromise = apolloServer
+		.start()
+		.then(() => apolloServer.createHandler({ path: "/api/graphql" }));
 
 	return async (req, res) => {
 		const handler = await handlerPromise;
@@ -32,6 +37,6 @@ const handleGraphQL: () => NextApiHandler = () => {
 		});
 		await handler(req, res);
 	};
-}
+};
 
 export default handleGraphQL;

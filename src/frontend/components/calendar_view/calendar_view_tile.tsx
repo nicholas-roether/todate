@@ -22,7 +22,6 @@ const useStyles = makeStyles((theme) => ({
 	containerNotMain: {
 		width: "100%",
 		height: "100%",
-		// background: theme.palette.background.default
 		color: theme.palette.text.disabled,
 		background: theme.palette.action.disabledBackground
 	},

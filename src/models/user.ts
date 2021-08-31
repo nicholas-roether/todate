@@ -29,24 +29,30 @@ class User implements UserInit {
 
 	public toJson(): string {
 		const { nickname, name, picture, updatedAt, id: sub } = this;
-		return JSON.stringify({nickname, name, picture, updatedAt: updatedAt.toISOString(), sub});
+		return JSON.stringify({
+			nickname,
+			name,
+			picture,
+			updatedAt: updatedAt.toISOString(),
+			sub
+		});
 	}
 
 	public static fromJson(json: string | object): User {
-		const obj = typeof json == "object" ? json : JSON.parse(json) as any;
+		const obj = typeof json == "object" ? json : (JSON.parse(json) as any);
 		const user = {
 			nickname: obj.nickname,
 			name: obj.name,
 			picture: obj.picture,
 			updatedAt: obj.updated_at ? new Date(obj.updated_at) : undefined,
 			id: obj.sub
-		}
+		};
 
 		const error = new Error("Tried to decode an invalid user object");
-		if(!this.isValidUser(user)) {
+		if (!this.isValidUser(user)) {
 			throw error;
 		}
-		
+
 		return new User(user);
 	}
 
@@ -55,11 +61,18 @@ class User implements UserInit {
 	}
 
 	private static isValidUser(obj: object): obj is UserInit {
-		return "nickname" 	in obj && typeof (obj as any).nickname 	== "string"
-			&& "name" 		in obj && typeof (obj as any).name 		== "string"
-			&& "picture"	in obj && typeof (obj as any).picture 	== "string"
-			&& "updatedAt"	in obj && (obj as any).updatedAt 		instanceof Date
-			&& "id"			in obj && typeof (obj as any).id		== "string";
+		return (
+			"nickname" in obj &&
+			typeof (obj as any).nickname == "string" &&
+			"name" in obj &&
+			typeof (obj as any).name == "string" &&
+			"picture" in obj &&
+			typeof (obj as any).picture == "string" &&
+			"updatedAt" in obj &&
+			(obj as any).updatedAt instanceof Date &&
+			"id" in obj &&
+			typeof (obj as any).id == "string"
+		);
 	}
 }
 

@@ -42,16 +42,6 @@ export interface CalendarViewProps {
 }
 
 const CalendarView = ({ date }: CalendarViewProps) => {
-	// // TODO localization
-	// const weekdayNames = [
-	// 	"Monday",
-	// 	"Tuesday",
-	// 	"Wednesday",
-	// 	"Thursday",
-	// 	"Friday",
-	// 	"Saturday",
-	// 	"Sunday"
-	// ];
 	const classes = useStyles();
 	const startDate = new Date();
 	startDate.setFullYear(date.getFullYear(), date.getMonth(), 0);
@@ -72,7 +62,9 @@ const CalendarView = ({ date }: CalendarViewProps) => {
 				<CalendarViewTile
 					day={tileDate.getDate()}
 					month={
-						tileDate.getDate() === 1 ? tileDate.getMonth() : null
+						tileDate.getDate() === 1
+							? tileDate.getMonth()
+							: undefined
 					}
 					mainMonth={tileDate.getMonth() === date.getMonth()}
 				>

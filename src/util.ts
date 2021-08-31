@@ -10,8 +10,4 @@ function tomorrow(): Date {
 	return new Date(highestMultipleBelow(86400000, Date.now() + 86400000));
 }
 
-export {
-	highestMultipleBelow,
-	today,
-	tomorrow
-}
+export { highestMultipleBelow, today, tomorrow };
