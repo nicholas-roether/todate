@@ -3,7 +3,6 @@ import clsx from "clsx";
 import React from "react";
 import { useEffect } from "react";
 import { usePrev } from "../hooks";
-import { BiArray, range } from "../utils";
 
 const useStyles = makeStyles((theme) => ({
 	container: {
@@ -42,7 +41,7 @@ export interface PageViewProps {
 	onUpdatePage?: (pageDiff: number) => void;
 }
 
-const SCROLL_COOLDOWN = 400;
+const SCROLL_COOLDOWN = 300;
 
 const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 	const classes = useStyles();

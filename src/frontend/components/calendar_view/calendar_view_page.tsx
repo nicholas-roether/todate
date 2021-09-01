@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 		padding: theme.spacing(1)
 	},
 	line: {
-		color: theme.palette.primary.main
+		borderColor: theme.palette.primary.main
 	},
 	grid: {
 		flex: 1,
@@ -46,7 +46,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const monthNameDateFormat = Intl.DateTimeFormat([], {
-	month: "long"
+	month: "long",
+	year: "numeric"
 });
 
 const weekdayNameDateFormat = Intl.DateTimeFormat([], {
