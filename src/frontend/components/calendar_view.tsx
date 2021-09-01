@@ -98,15 +98,15 @@ import PageView from "./page_view";
 
 export interface CalendarViewProps {
 	startDate: Date;
-	startPage?: number;
-	onUpdatePage?: (newPage: number) => void;
+	page?: number;
+	onUpdatePage?: (pageDiff: number) => void;
 	getTileContent?: (month: number) => CalendarTileContentMap;
 	onTileClick?: (date: Date, event: React.MouseEvent) => void;
 }
 
 const CalendarView = ({
 	startDate,
-	startPage = 0,
+	page = 0,
 	onUpdatePage,
 	getTileContent,
 	onTileClick
@@ -133,7 +133,7 @@ const CalendarView = ({
 	startDate.setHours(0, 0, 0, 0);
 	return (
 		<PageView
-			startPage={startPage}
+			page={page}
 			onUpdatePage={onUpdatePage}
 			builder={(index) => {
 				const offsetDate = new Date(startDate);

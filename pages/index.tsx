@@ -5,16 +5,16 @@ import Page from "../src/frontend/components/page";
 const Index = () => {
 	const [page, setPage] = React.useState<number>(0);
 	useEffect(() => {
-		setInterval(() => {
+		window.setInterval(() => {
 			setPage((page) => page - 1);
-		}, 5000);
+		}, 4000);
 	}, []);
 	return (
 		<Page title="home">
 			<CalendarView
 				startDate={new Date()}
-				startPage={page}
-				onUpdatePage={(newPage) => setPage(newPage)}
+				page={page}
+				onUpdatePage={(pageDiff) => setPage((page) => page + pageDiff)}
 			/>
 		</Page>
 	);

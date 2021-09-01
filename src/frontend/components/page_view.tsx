@@ -1,119 +1,118 @@
 import { makeStyles } from "@material-ui/core";
+import clsx from "clsx";
 import React from "react";
 import { useEffect } from "react";
+import { usePrev } from "../hooks";
 import { BiArray, range } from "../utils";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
 	container: {
 		height: "100%",
-		overflowY: "scroll",
-		scrollbarWidth: "none",
-		msOverflowStyle: "none",
-		scrollSnapType: "y mandatory",
-		"&::-webkit-scrollbar": {
-			display: "none"
-		}
+		overflow: "hidden",
+		position: "relative",
+		top: 0,
+		left: 0
 	},
 	pageContainer: {
 		height: "100%",
-		scrollSnapAlign: "center"
+		width: "100%",
+		transition: theme.transitions.create(["top", "bottom"], {
+			duration: theme.transitions.duration.standard,
+			easing: theme.transitions.easing.easeOut
+		}),
+		position: "absolute"
+	},
+	topPage: {
+		top: 0
+	},
+	bottomPage: {
+		bottom: 0
+	},
+	startBelowScreen: {
+		bottom: "-100%"
+	},
+	startAboveScreen: {
+		top: "-100%"
 	}
-});
+}));
 
 export interface PageViewProps {
 	builder: (index: number) => React.ReactNode;
-	startPage?: number;
-	onUpdatePage?: (newPage: number) => void;
+	page?: number;
+	onUpdatePage?: (pageDiff: number) => void;
 }
 
-const PRELOAD_COUNT = 3;
+const SCROLL_COOLDOWN = 400;
 
-const PageView = ({ builder, startPage = 0, onUpdatePage }: PageViewProps) => {
+const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 	const classes = useStyles();
-	const pagesRef = React.useRef(BiArray.empty<React.ReactNode>());
-	const currentPageRef = React.useRef(startPage);
+	const prevPage = usePrev(page);
+	const bottomPageRef = React.useRef<HTMLDivElement>(null);
+	const topPageRef = React.useRef<HTMLDivElement>(null);
 	const containerRef = React.useRef<HTMLDivElement>(null);
-	const [state, setState] = React.useState(false);
+	const scrollingRef = React.useRef<boolean>(false);
 
-	function rebuild() {
-		setState((state) => !state);
-	}
-
-	if (pagesRef.current.length == 0) {
-		for (
-			let i = startPage - PRELOAD_COUNT;
-			i <= startPage + PRELOAD_COUNT;
-			i++
-		) {
-			pagesRef.current.set(i, builder(i));
-		}
-	}
-
-	// initial scrolling
+	// Transition animation
 	useEffect(() => {
-		const container = containerRef.current;
-		if (!container) return;
-		const pageHeight = container.offsetHeight;
-		// container.scrollTo({
-		// 	top: (currentPageRef.current + pagesRef.current.offset) * pageHeight
-		// });
-		if (currentPageRef.current != startPage) {
-			container.scrollTo({
-				top: (startPage + pagesRef.current.offset) * pageHeight,
-				behavior: "smooth"
+		if (!topPageRef.current || !bottomPageRef.current) return;
+		if (prevPage !== null && prevPage < page) {
+			topPageRef.current.style.top = "-100%";
+			bottomPageRef.current.style.bottom = "0";
+		} else if (prevPage !== null && prevPage > page) {
+			topPageRef.current.style.top = "0";
+			bottomPageRef.current.style.bottom = "-100%";
+		}
+	}, [page, prevPage]);
+
+	// Scroll listener
+	useEffect(() => {
+		if (!containerRef.current || !onUpdatePage) return;
+		containerRef.current.addEventListener("wheel", (evt) => {
+			if (scrollingRef.current || evt.deltaY == 0) return;
+			setTimeout(() => {
+				onUpdatePage(evt.deltaY > 0 ? 1 : -1);
 			});
-			currentPageRef.current = startPage;
-		}
-	}, [startPage]);
-
-	// scroll event handling
-	useEffect(() => {
-		const container = containerRef.current;
-		if (!container) return;
-		const pageHeight = container.offsetHeight;
-		container.addEventListener("scroll", (evt) => {
-			const scrollHeight = container.scrollTop;
-			const currentPage = currentPageRef.current;
-			const pages = pagesRef.current;
-			const newPage =
-				Math.round(scrollHeight / pageHeight) - pages.offset;
-			if (newPage != currentPage) {
-				// Update currentPageRef
-				currentPageRef.current = newPage;
-				onUpdatePage?.(newPage);
-
-				// Load more pages
-				if (currentPage == -pages.lengthNegative + 1) {
-					pages.prepend(
-						range(
-							-pages.lengthNegative - PRELOAD_COUNT,
-							-pages.lengthNegative
-						).map((i) => builder(i))
-					);
-					rebuild();
-					container.scrollTo({
-						top: scrollHeight + PRELOAD_COUNT * pageHeight
-					});
-				} else if (currentPage == pages.lengthPositive - 1) {
-					pages.append(
-						range(
-							pages.lengthPositive,
-							pages.lengthPositive + PRELOAD_COUNT
-						).map((i) => builder(i))
-					);
-					rebuild();
-				}
-			}
+			scrollingRef.current = true;
+			setTimeout(() => (scrollingRef.current = false), SCROLL_COOLDOWN);
 		});
-	}, [builder, onUpdatePage]);
+	}, [onUpdatePage]);
+
+	if (prevPage == null || prevPage == page) {
+		return (
+			<div ref={containerRef} className={classes.container}>
+				<div className={classes.pageContainer}>{builder(page)}</div>
+			</div>
+		);
+	}
+
+	const forwards = page > prevPage;
+	const currentPageContent = builder(page);
+	const prevPageContent = builder(prevPage);
 
 	return (
 		<div ref={containerRef} className={classes.container}>
-			{pagesRef.current.map((pageNode, i) => (
-				<div className={classes.pageContainer} key={i}>
-					{pageNode}
-				</div>
-			))}
+			<div
+				ref={topPageRef}
+				className={clsx(
+					classes.pageContainer,
+					classes.topPage,
+					!forwards && classes.startAboveScreen
+				)}
+				key={`top-#${forwards ? prevPage : page}`}
+			>
+				{forwards ? prevPageContent : currentPageContent}
+			</div>
+			<div
+				ref={bottomPageRef}
+				className={clsx(
+					classes.pageContainer,
+					classes.bottomPage,
+					forwards && classes.startBelowScreen
+				)}
+				key={`bottom-#${forwards ? page : prevPage}`}
+			>
+				{forwards ? currentPageContent : prevPageContent}
+			</div>
 		</div>
 	);
 };
