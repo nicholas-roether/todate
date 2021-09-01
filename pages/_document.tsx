@@ -1,8 +1,13 @@
 import { ServerStyleSheets } from "@material-ui/core";
 import Document, { Head, Html, Main, NextScript } from "next/document";
+import polyfills from "../src/polyfills";
 import React from "react";
 
 class MyDocument extends Document {
+	public componentDidMount() {
+		polyfills();
+	}
+
 	render() {
 		return (
 			<Html>

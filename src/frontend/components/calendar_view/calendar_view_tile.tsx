@@ -1,10 +1,4 @@
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	makeStyles,
-	Typography
-} from "@material-ui/core";
+import { Card, CardContent, makeStyles, Typography } from "@material-ui/core";
 import React, { PropsWithChildren } from "react";
 import { EventHandler } from "react";
 
@@ -13,18 +7,7 @@ const dateFormatDay = new Intl.DateTimeFormat([], {
 	day: "numeric"
 });
 
-const dateFormatDayMonth = new Intl.DateTimeFormat([], {
-	day: "numeric",
-	month: "numeric"
-});
-
 const useStyles = makeStyles((theme) => ({
-	containerNotMain: {
-		width: "100%",
-		height: "100%",
-		color: theme.palette.text.disabled,
-		background: theme.palette.action.disabledBackground
-	},
 	dayText: {
 		fontSize: theme.typography.h5.fontSize
 	},
@@ -34,42 +17,34 @@ const useStyles = makeStyles((theme) => ({
 	container: {
 		width: "100%",
 		height: "100%",
-		background: theme.palette.background.default
+		background: theme.palette.background.default,
+		borderWidth: "2px"
 	}
 }));
 
 interface CalendarViewTileProps {
-	day: number;
-	month?: number;
-	mainMonth?: boolean;
+	date: Date;
+	component?: React.ElementType<React.HTMLAttributes<HTMLElement>>;
 	onClick?: EventHandler<React.MouseEvent>;
 }
 
 const CalendarViewTile = ({
-	day,
-	month,
-	mainMonth = true,
+	date,
 	onClick,
-	children
+	children,
+	component
 }: PropsWithChildren<CalendarViewTileProps>) => {
 	const classes = useStyles();
-	const date = new Date();
-	date.setDate(day);
-	let dayText = "";
-	if (month !== null && month !== undefined) {
-		date.setMonth(month);
-		dayText = dateFormatDayMonth.format(date);
-	} else {
-		dayText = dateFormatDay.format(date);
-	}
-	console.log(dayText, day);
+	date.setHours(0, 0, 0, 0);
+	const dayText = dateFormatDay.format(date.getTime());
 	return (
 		<Card
 			variant="outlined"
 			raised={false}
 			square={true}
-			className={mainMonth ? classes.container : classes.containerNotMain}
+			className={classes.container}
 			onClick={onClick}
+			component={component}
 		>
 			<CardContent>
 				<Typography className={classes.dayText}>{dayText}</Typography>
