@@ -1,4 +1,5 @@
 import { Card, CardContent, makeStyles, Typography } from "@material-ui/core";
+import clsx from "clsx";
 import React, { PropsWithChildren } from "react";
 import { EventHandler } from "react";
 
@@ -18,21 +19,46 @@ const useStyles = makeStyles((theme) => ({
 		width: "100%",
 		height: "100%",
 		background: theme.palette.background.default,
-		borderWidth: "2px"
+		borderWidth: "2px",
+		transition: theme.transitions.create(
+			["background", "color", "border-color"],
+			{
+				duration: theme.transitions.duration.short
+			}
+		),
+		cursor: "pointer",
+		"&:hover": {
+			background: theme.palette.background.paper
+		}
+	},
+	highlighted: {
+		color: theme.palette.secondary.contrastText,
+		borderColor: theme.palette.secondary.main,
+		background: theme.palette.secondary.dark,
+		borderWidth: "4px",
+		margin: "-2px",
+		width: "calc(100% + 4px)",
+		height: "calc(100% + 4px)",
+		position: "relative",
+		top: 0,
+		left: 0,
+		"&:hover": {
+			background: theme.palette.secondary.main
+		}
 	}
 }));
 
 interface CalendarViewTileProps {
 	date: Date;
-	component?: React.ElementType<React.HTMLAttributes<HTMLElement>>;
+	today?: boolean;
 	onClick?: EventHandler<React.MouseEvent>;
 }
 
 const CalendarViewTile = ({
 	date,
+	today = false,
 	onClick,
-	children,
-	component
+	children
 }: PropsWithChildren<CalendarViewTileProps>) => {
 	const classes = useStyles();
 	date.setHours(0, 0, 0, 0);
@@ -42,9 +68,8 @@ const CalendarViewTile = ({
 			variant="outlined"
 			raised={false}
 			square={true}
-			className={classes.container}
+			className={clsx(classes.container, today && classes.highlighted)}
 			onClick={onClick}
-			component={component}
 		>
 			<CardContent>
 				<Typography className={classes.dayText}>{dayText}</Typography>

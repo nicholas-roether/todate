@@ -12,6 +12,7 @@ export type CalendarTileContentMap = CalendarTileContentMapElement[];
 
 export interface CalendarViewPageProps {
 	date: Date;
+	today?: Date;
 	onTileClick?: (date: Date, event: React.MouseEvent) => void;
 	tileContent?: CalendarTileContentMap;
 }
@@ -25,7 +26,8 @@ const useStyles = makeStyles((theme) => ({
 		padding: theme.spacing(1)
 	},
 	line: {
-		borderColor: theme.palette.primary.main
+		borderColor: theme.palette.primary.main,
+		marginTop: theme.spacing(2)
 	},
 	grid: {
 		flex: 1,
@@ -41,7 +43,8 @@ const useStyles = makeStyles((theme) => ({
 		padding: theme.spacing(2, 0)
 	},
 	gridTile: {
-		margin: "-1px"
+		margin: "-1px",
+		overflow: "shown"
 	}
 }));
 
@@ -63,6 +66,7 @@ for (let i = 0; i < 7; i++) {
 
 const CalendarViewPage = ({
 	date,
+	today,
 	onTileClick,
 	tileContent = []
 }: CalendarViewPageProps) => {
@@ -70,6 +74,10 @@ const CalendarViewPage = ({
 	date = new Date(date);
 	date.setDate(1);
 	date.setHours(0, 0, 0, 0);
+	if (today) {
+		today = new Date(today);
+		today.setHours(0, 0, 0, 0);
+	}
 	return (
 		<div className={classes.container}>
 			<header className={classes.header}>
@@ -110,6 +118,10 @@ const CalendarViewPage = ({
 								<CalendarViewTile
 									date={weekdayDate}
 									onClick={clickHandler}
+									today={
+										today &&
+										today.getTime() == weekdayDate.getTime()
+									}
 								>
 									{content}
 								</CalendarViewTile>
