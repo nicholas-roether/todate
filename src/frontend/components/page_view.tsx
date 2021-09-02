@@ -42,6 +42,7 @@ export interface PageViewProps {
 }
 
 const SCROLL_COOLDOWN = 300;
+const DRAG_THRESHOLD = 20;
 
 const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 	const classes = useStyles();
@@ -50,6 +51,7 @@ const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 	const topPageRef = React.useRef<HTMLDivElement>(null);
 	const containerRef = React.useRef<HTMLDivElement>(null);
 	const scrollingRef = React.useRef<boolean>(false);
+	const ongoingTouches = React.useRef<Touch[]>([]);
 
 	// Transition animation
 	useEffect(() => {
@@ -63,16 +65,54 @@ const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 		}
 	}, [page, prevPage]);
 
-	// Scroll listener
+	// Scroll/Drag listener
 	useEffect(() => {
 		if (!containerRef.current || !onUpdatePage) return;
-		containerRef.current.addEventListener("wheel", (evt) => {
-			if (scrollingRef.current || evt.deltaY == 0) return;
+		function tryUpdateBy(amount: number) {
+			if (scrollingRef.current) return;
 			setTimeout(() => {
-				onUpdatePage(evt.deltaY > 0 ? 1 : -1);
+				onUpdatePage?.(amount);
 			});
 			scrollingRef.current = true;
 			setTimeout(() => (scrollingRef.current = false), SCROLL_COOLDOWN);
+		}
+		containerRef.current.addEventListener("wheel", (evt) => {
+			if (evt.deltaY == 0) return;
+			tryUpdateBy(evt.deltaY > 0 ? 1 : -1);
+		});
+		containerRef.current.addEventListener("touchstart", (evt) => {
+			evt.preventDefault();
+			ongoingTouches.current = Array.from(evt.changedTouches);
+		});
+		containerRef.current.addEventListener("touchend", (evt) => {
+			evt.preventDefault();
+			ongoingTouches.current.forEach((val, i) => {
+				if (
+					Array.from(evt.changedTouches).find(
+						(touch) => touch.identifier == val.identifier
+					)
+				)
+					ongoingTouches.current.splice(i, 1);
+			});
+		});
+		containerRef.current.addEventListener("touchmove", (evt) => {
+			evt.preventDefault();
+			if (scrollingRef.current) return;
+			for (const touch of Array.from(evt.changedTouches)) {
+				const prevState = ongoingTouches.current.find(
+					(prevTouch) => prevTouch.identifier == touch.identifier
+				);
+				if (!prevState) return;
+				const deltaX = touch.clientX - prevState.clientX;
+				const deltaY = touch.clientY - prevState.clientY;
+				if (
+					Math.abs(deltaY) > Math.abs(deltaX) &&
+					Math.abs(deltaY) > DRAG_THRESHOLD
+				) {
+					tryUpdateBy(deltaY < 0 ? 1 : -1);
+					return;
+				}
+			}
 		});
 	}, [onUpdatePage]);
 
