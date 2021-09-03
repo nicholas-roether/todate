@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/core";
 import clsx from "clsx";
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useEffect } from "react";
 
 export interface ResizableContainerProps {
 	top?: boolean;
@@ -93,9 +93,34 @@ const ResizableContainer = ({
 	children
 }: PropsWithChildren<ResizableContainerProps>) => {
 	const classes = useStyles();
+	const containerRef = React.useRef<HTMLDivElement>(null);
 
 	const vertical = top || bottom;
 	const horizontal = left || right;
+
+	const gutterMouseDownListener = () => {
+		const container = containerRef.current;
+		if (!container) return;
+		container.style.userSelect = "none";
+		container.style.pointerEvents = "none";
+	};
+
+	const verticalGutterMouseDownListener = () => {
+		const container = containerRef.current;
+		if (!container) return;
+	};
+
+	const windowMouseUpListener = () => {
+		const container = containerRef.current;
+		if (!container) return;
+		container.style.userSelect = "";
+		container.style.pointerEvents = "";
+		// window.document.firstChild?.style.cursor = "";
+	};
+
+	useEffect(() => {
+		window.addEventListener("mouseup", windowMouseUpListener);
+	}, []);
 
 	return (
 		<div
@@ -108,11 +133,40 @@ const ResizableContainer = ({
 				minHeight,
 				maxHeight
 			}}
+			ref={containerRef}
 		>
-			{top && <div className={clsx(classes.gutter, "top")} />}
-			{bottom && <div className={clsx(classes.gutter, "bottom")} />}
-			{left && <div className={clsx(classes.gutter, "left")} />}
-			{right && <div className={clsx(classes.gutter, "right")} />}
+			{top && (
+				<div
+					className={clsx(classes.gutter, "top")}
+					onMouseDown={() => {
+						gutterMouseDownListener();
+					}}
+				/>
+			)}
+			{bottom && (
+				<div
+					className={clsx(classes.gutter, "bottom")}
+					onMouseDown={() => {
+						gutterMouseDownListener();
+					}}
+				/>
+			)}
+			{left && (
+				<div
+					className={clsx(classes.gutter, "left")}
+					onMouseDown={() => {
+						gutterMouseDownListener();
+					}}
+				/>
+			)}
+			{right && (
+				<div
+					className={clsx(classes.gutter, "right")}
+					onMouseDown={() => {
+						gutterMouseDownListener();
+					}}
+				/>
+			)}
 			<main className={classes.content}>{children}</main>
 		</div>
 	);

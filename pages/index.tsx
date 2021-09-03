@@ -2,7 +2,7 @@ import { Paper } from "@material-ui/core";
 import React, { useEffect } from "react";
 import CalendarView from "../src/frontend/components/calendar_view";
 import Page from "../src/frontend/components/page";
-import ResizableContainer from "../src/frontend/components/util/resizable_container";
+import ResizableContainer from "../src/frontend/components/resizable_container";
 
 const Index = () => {
 	const [page, setPage] = React.useState<number>(0);
