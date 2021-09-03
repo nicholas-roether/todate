@@ -1,16 +1,34 @@
+import { Paper } from "@material-ui/core";
 import React, { useEffect } from "react";
 import CalendarView from "../src/frontend/components/calendar_view";
 import Page from "../src/frontend/components/page";
+import ResizableContainer from "../src/frontend/components/util/resizable_container";
 
 const Index = () => {
 	const [page, setPage] = React.useState<number>(0);
 	return (
 		<Page title="home">
-			<CalendarView
-				startDate={new Date()}
-				page={page}
-				onUpdatePage={(pageDiff) => setPage((page) => page + pageDiff)}
-			/>
+			<div style={{ display: "flex", height: "100%" }}>
+				<ResizableContainer
+					right
+					defaultWidth="500px"
+					minWidth="100px"
+					maxWidth="calc(100% - 100px)"
+				>
+					<Paper square style={{ height: "100%" }}>
+						test
+					</Paper>
+				</ResizableContainer>
+				<div style={{ flex: "1" }}>
+					<CalendarView
+						startDate={new Date()}
+						page={page}
+						onUpdatePage={(pageDiff) =>
+							setPage((page) => page + pageDiff)
+						}
+					/>
+				</div>
+			</div>
 		</Page>
 	);
 };

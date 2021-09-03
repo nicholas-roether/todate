@@ -2,7 +2,7 @@ import { makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import React from "react";
 import { useEffect } from "react";
-import { usePrev } from "../hooks";
+import { usePrev } from "../../hooks";
 
 const useStyles = makeStyles((theme) => ({
 	container: {

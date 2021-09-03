@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import CalendarViewPage, {
 	CalendarTileContentMap
 } from "./calendar_view/calendar_view_page";
-import PageView from "./page_view";
+import PageView from "./util/page_view";
 
 export interface CalendarViewProps {
 	startDate: Date;
