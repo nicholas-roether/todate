@@ -1,18 +1,18 @@
 import { makeStyles } from "@material-ui/core";
 import clsx from "clsx";
-import React, { PropsWithChildren, useEffect } from "react";
+import React, { PropsWithChildren, useCallback, useEffect } from "react";
 
 export interface ResizableContainerProps {
 	top?: boolean;
 	bottom?: boolean;
 	left?: boolean;
 	right?: boolean;
-	defaultWidth?: string;
-	minWidth?: string;
-	maxWidth?: string;
-	defaultHeight?: string;
-	minHeight?: string;
-	maxHeight?: string;
+	defaultWidth?: number;
+	minWidth?: number;
+	maxWidth?: number;
+	defaultHeight?: number;
+	minHeight?: number;
+	maxHeight?: number;
 }
 
 const useStyles = makeStyles(() => ({
@@ -27,18 +27,6 @@ const useStyles = makeStyles(() => ({
 			 '. 			.			bottom-outer	.  			.			'",
 		gridTemplateRows: "min-content 10px auto 10px min-content",
 		gridTemplateColumns: "min-content 10px auto 10px min-content"
-		// width: (props: ResizableContainerProps) =>
-		// 	props.left || props.right ? props.defaultWidth ?? "50%" : "100%",
-		// height: (props: ResizableContainerProps) =>
-		// 	props.top || props.bottom ? props.defaultHeight ?? "50%" : "100%",
-		// minWidth: (props: ResizableContainerProps) =>
-		// 	props.left || props.right ? props.minWidth ?? "0" : "0",
-		// maxWidth: (props: ResizableContainerProps) =>
-		// 	props.left || props.right ? props.maxWidth ?? "100%" : "100%",
-		// minHeight: (props: ResizableContainerProps) =>
-		// 	props.top || props.bottom ? props.minWidth ?? "0" : "0",
-		// maxHeight: (props: ResizableContainerProps) =>
-		// 	props.top || props.bottom ? props.maxWidth ?? "100%" : "100%"
 	},
 	content: {
 		gridRowStart: "top-inner",
@@ -84,12 +72,12 @@ const ResizableContainer = ({
 	bottom = false,
 	left = false,
 	right = false,
-	defaultWidth = "50%",
-	minWidth = "0",
-	maxWidth = "100%",
-	defaultHeight = "50%",
-	minHeight = "0",
-	maxHeight = "100%",
+	defaultWidth = 300,
+	minWidth = 0,
+	maxWidth,
+	defaultHeight = 300,
+	minHeight = 0,
+	maxHeight,
 	children
 }: PropsWithChildren<ResizableContainerProps>) => {
 	const classes = useStyles();
@@ -98,29 +86,125 @@ const ResizableContainer = ({
 	const vertical = top || bottom;
 	const horizontal = left || right;
 
-	const gutterMouseDownListener = () => {
+	const gutterMouseDownListener = useCallback(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		container.style.userSelect = "none";
-		container.style.pointerEvents = "none";
-	};
+		[
+			container,
+			document.body,
+			...Array.from(
+				container.getElementsByClassName(
+					"gutter"
+				) as HTMLCollectionOf<HTMLElement>
+			)
+		].forEach((elem) => {
+			elem.style.userSelect = "none";
+		});
+	}, []);
 
-	const verticalGutterMouseDownListener = () => {
-		const container = containerRef.current;
-		if (!container) return;
-	};
+	const horizontalDragListener = useCallback(
+		(evt: MouseEvent) => {
+			const container = containerRef.current;
+			if (!container) return;
+			if (evt.movementX == 0) return;
+			let resize = defaultWidth;
+			if (container.getAttribute("data-resize-horizontal"))
+				resize = Number.parseFloat(
+					container.getAttribute("data-resize-horizontal") as string
+				);
+			resize += evt.movementX;
+			if (maxWidth !== undefined && resize > maxWidth)
+				container.style.width = `${maxWidth}px`;
+			else if (resize < minWidth) container.style.width = `${minWidth}px`;
+			else container.style.width = `${resize}px`;
+			container.setAttribute("data-resize-horizontal", resize.toString());
+		},
+		[defaultWidth, maxWidth, minWidth]
+	);
 
-	const windowMouseUpListener = () => {
+	const verticalDragListener = useCallback(
+		(evt: MouseEvent) => {
+			const container = containerRef.current;
+			if (!container) return;
+			if (evt.movementY == 0) return;
+			const xPos = left
+				? container.offsetLeft
+				: container.offsetLeft + container.offsetWidth;
+			let resize = defaultWidth;
+			if (container.getAttribute("data-resize-vertical"))
+				resize = Number.parseFloat(
+					container.getAttribute("data-resize-vertical") ?? "0"
+				);
+			resize += evt.movementY;
+			container.style.width = `${resize}px`;
+			if (maxHeight !== undefined && resize > maxHeight)
+				container.style.height = `${maxHeight}px`;
+			else if (resize < minHeight)
+				container.style.height = `${minHeight}px`;
+			else container.style.height = `${resize}px`;
+			container.setAttribute("data-resize-horizontal", resize.toString());
+		},
+		[defaultWidth, left, maxHeight, minHeight]
+	);
+
+	const horizontalGutterMouseDownListener = useCallback(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		container.style.userSelect = "";
-		container.style.pointerEvents = "";
-		// window.document.firstChild?.style.cursor = "";
-	};
+		[
+			container,
+			document.body,
+			...Array.from(
+				container.getElementsByClassName(
+					"gutter"
+				) as HTMLCollectionOf<HTMLElement>
+			)
+		].forEach((elem) => {
+			elem.style.cursor = "col-resize";
+		});
+		gutterMouseDownListener();
+		window.addEventListener("mousemove", horizontalDragListener);
+	}, [gutterMouseDownListener, horizontalDragListener]);
+
+	const verticalGutterMouseDownListener = useCallback(() => {
+		const container = containerRef.current;
+		if (!container) return;
+		[
+			container,
+			document.body,
+			...Array.from(
+				container.getElementsByClassName(
+					"gutter"
+				) as HTMLCollectionOf<HTMLElement>
+			)
+		].forEach((elem) => {
+			elem.style.cursor = "row-resize";
+		});
+		gutterMouseDownListener();
+		window.addEventListener("mousemove", verticalDragListener);
+	}, [gutterMouseDownListener, verticalDragListener]);
+
+	const windowMouseUpListener = useCallback(() => {
+		const container = containerRef.current;
+		if (!container) return;
+		[
+			container,
+			document.body,
+			...Array.from(
+				container.getElementsByClassName(
+					"gutter"
+				) as HTMLCollectionOf<HTMLElement>
+			)
+		].forEach((elem) => {
+			elem.style.userSelect = "";
+			elem.style.cursor = "";
+		});
+		window.removeEventListener("mousemove", horizontalDragListener);
+		window.removeEventListener("mousemove", verticalDragListener);
+	}, [horizontalDragListener, verticalDragListener]);
 
 	useEffect(() => {
 		window.addEventListener("mouseup", windowMouseUpListener);
-	}, []);
+	}, [windowMouseUpListener]);
 
 	return (
 		<div
@@ -137,33 +221,33 @@ const ResizableContainer = ({
 		>
 			{top && (
 				<div
-					className={clsx(classes.gutter, "top")}
+					className={clsx(classes.gutter, "top", "gutter")}
 					onMouseDown={() => {
-						gutterMouseDownListener();
+						verticalGutterMouseDownListener();
 					}}
 				/>
 			)}
 			{bottom && (
 				<div
-					className={clsx(classes.gutter, "bottom")}
+					className={clsx(classes.gutter, "bottom", "gutter")}
 					onMouseDown={() => {
-						gutterMouseDownListener();
+						verticalGutterMouseDownListener();
 					}}
 				/>
 			)}
 			{left && (
 				<div
-					className={clsx(classes.gutter, "left")}
+					className={clsx(classes.gutter, "left", "gutter")}
 					onMouseDown={() => {
-						gutterMouseDownListener();
+						horizontalGutterMouseDownListener();
 					}}
 				/>
 			)}
 			{right && (
 				<div
-					className={clsx(classes.gutter, "right")}
+					className={clsx(classes.gutter, "right", "gutter")}
 					onMouseDown={() => {
-						gutterMouseDownListener();
+						horizontalGutterMouseDownListener();
 					}}
 				/>
 			)}
