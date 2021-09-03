@@ -11,9 +11,9 @@ const Index = () => {
 			<div style={{ display: "flex", height: "100%" }}>
 				<ResizableContainer
 					right
-					defaultWidth={500}
-					minWidth={100}
-					maxWidth={800}
+					defaultWidth={350}
+					minWidth={80}
+					maxWidth="min(600px, calc(100% - 800px))"
 				>
 					<Paper square style={{ height: "100%" }}>
 						test

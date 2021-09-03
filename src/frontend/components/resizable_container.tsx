@@ -8,11 +8,11 @@ export interface ResizableContainerProps {
 	left?: boolean;
 	right?: boolean;
 	defaultWidth?: number;
-	minWidth?: number;
-	maxWidth?: number;
+	minWidth?: number | string;
+	maxWidth?: number | string;
 	defaultHeight?: number;
-	minHeight?: number;
-	maxHeight?: number;
+	minHeight?: number | string;
+	maxHeight?: number | string;
 }
 
 const useStyles = makeStyles(() => ({
@@ -35,37 +35,53 @@ const useStyles = makeStyles(() => ({
 		gridColumnEnd: "right-inner"
 	},
 	gutter: {
-		position: "relative",
-		"&.top, &.bottom": {
-			cursor: "ns-resize",
-			gridColumnStart: "left-outer",
-			gridColumnEnd: "right-outer",
-			height: "20px"
-		},
-		"&.left, &.right": {
-			cursor: "ew-resize",
-			gridRowStart: "top-outer",
-			gridRowEnd: "bottom-outer",
-			width: "20px"
-		},
-		"&.top": {
-			gridRowStart: "top-outer",
-			gridRowEnd: "top-inner"
-		},
-		"&.bottom": {
-			gridRowStart: "bottom-inner",
-			gridRowEnd: "bottom-outer"
-		},
-		"&.left": {
-			gridColumnStart: "left-outer",
-			gridColumnEnd: "left-inner"
-		},
-		"&.right": {
-			gridColumnStart: "right-inner",
-			gridColumnEnd: "right-outer"
-		}
+		position: "relative"
+	},
+	gutterTop: {
+		cursor: "ns-resize",
+		gridColumnStart: "left-outer",
+		gridColumnEnd: "right-outer",
+		height: "20px",
+		gridRowStart: "top-outer",
+		gridRowEnd: "top-inner"
+	},
+	gutterBottom: {
+		cursor: "ns-resize",
+		gridColumnStart: "left-outer",
+		gridColumnEnd: "right-outer",
+		height: "20px",
+		gridRowStart: "bottom-inner",
+		gridRowEnd: "bottom-outer"
+	},
+	gutterLeft: {
+		cursor: "ew-resize",
+		gridRowStart: "top-outer",
+		gridRowEnd: "bottom-outer",
+		width: "20px",
+		gridColumnStart: "left-outer",
+		gridColumnEnd: "left-inner"
+	},
+	gutterRight: {
+		cursor: "ew-resize",
+		gridRowStart: "top-outer",
+		gridRowEnd: "bottom-outer",
+		width: "20px",
+		gridColumnStart: "right-inner",
+		gridColumnEnd: "right-outer"
+	},
+	draggingHorizontal: {
+		cursor: "col-resize"
+	},
+	draggingVertical: {
+		cursor: "row-resize"
 	}
 }));
+
+enum DragState {
+	NONE,
+	VERTICAL,
+	HORIZONTAL
+}
 
 const ResizableContainer = ({
 	top = false,
@@ -74,133 +90,81 @@ const ResizableContainer = ({
 	right = false,
 	defaultWidth = 300,
 	minWidth = 0,
-	maxWidth,
+	maxWidth = "100%",
 	defaultHeight = 300,
 	minHeight = 0,
-	maxHeight,
+	maxHeight = "100%",
 	children
 }: PropsWithChildren<ResizableContainerProps>) => {
 	const classes = useStyles();
 	const containerRef = React.useRef<HTMLDivElement>(null);
+	const [dragState, setDragState] = React.useState<DragState>(DragState.NONE);
+	const [widthResize, setWidthResize] = React.useState<number>(defaultWidth);
+	const [heightResize, setHeightResize] =
+		React.useState<number>(defaultHeight);
 
 	const vertical = top || bottom;
 	const horizontal = left || right;
 
 	const gutterMouseDownListener = useCallback(() => {
-		const container = containerRef.current;
-		if (!container) return;
-		[
-			container,
-			document.body,
-			...Array.from(
-				container.getElementsByClassName(
-					"gutter"
-				) as HTMLCollectionOf<HTMLElement>
-			)
-		].forEach((elem) => {
-			elem.style.userSelect = "none";
-		});
+		document.body.style.userSelect = "none";
 	}, []);
 
 	const horizontalDragListener = useCallback(
 		(evt: MouseEvent) => {
-			const container = containerRef.current;
-			if (!container) return;
-			if (evt.movementX == 0) return;
-			let resize = defaultWidth;
-			if (container.getAttribute("data-resize-horizontal"))
-				resize = Number.parseFloat(
-					container.getAttribute("data-resize-horizontal") as string
-				);
-			resize += evt.movementX;
-			if (maxWidth !== undefined && resize > maxWidth)
-				container.style.width = `${maxWidth}px`;
-			else if (resize < minWidth) container.style.width = `${minWidth}px`;
-			else container.style.width = `${resize}px`;
-			container.setAttribute("data-resize-horizontal", resize.toString());
+			if (!containerRef.current) return;
+			if (!left && !right) return;
+			let gutterPos = containerRef.current.offsetLeft;
+			if (left) gutterPos += 10;
+			else if (right) gutterPos += containerRef.current.offsetWidth - 10;
+			const diff = evt.clientX - gutterPos;
+			const currentWidth = containerRef.current.offsetWidth;
+			setWidthResize(() => currentWidth + diff);
 		},
-		[defaultWidth, maxWidth, minWidth]
+		[left, right]
 	);
 
 	const verticalDragListener = useCallback(
 		(evt: MouseEvent) => {
-			const container = containerRef.current;
-			if (!container) return;
-			if (evt.movementY == 0) return;
-			const xPos = left
-				? container.offsetLeft
-				: container.offsetLeft + container.offsetWidth;
-			let resize = defaultWidth;
-			if (container.getAttribute("data-resize-vertical"))
-				resize = Number.parseFloat(
-					container.getAttribute("data-resize-vertical") ?? "0"
-				);
-			resize += evt.movementY;
-			container.style.width = `${resize}px`;
-			if (maxHeight !== undefined && resize > maxHeight)
-				container.style.height = `${maxHeight}px`;
-			else if (resize < minHeight)
-				container.style.height = `${minHeight}px`;
-			else container.style.height = `${resize}px`;
-			container.setAttribute("data-resize-horizontal", resize.toString());
+			if (!containerRef.current) return;
+			if (!top && !bottom) return;
+			let gutterPos = containerRef.current.offsetTop;
+			if (top) gutterPos += 10;
+			else if (bottom)
+				gutterPos += containerRef.current.offsetHeight - 10;
+			const diff = evt.clientY - gutterPos;
+			const currentHeight = containerRef.current.offsetHeight;
+			setHeightResize(() => currentHeight + diff);
 		},
-		[defaultWidth, left, maxHeight, minHeight]
+		[bottom, top]
 	);
 
 	const horizontalGutterMouseDownListener = useCallback(() => {
-		const container = containerRef.current;
-		if (!container) return;
-		[
-			container,
-			document.body,
-			...Array.from(
-				container.getElementsByClassName(
-					"gutter"
-				) as HTMLCollectionOf<HTMLElement>
-			)
-		].forEach((elem) => {
-			elem.style.cursor = "col-resize";
-		});
+		document.body.style.cursor = "col-resize";
+		setDragState(DragState.HORIZONTAL);
 		gutterMouseDownListener();
 		window.addEventListener("mousemove", horizontalDragListener);
 	}, [gutterMouseDownListener, horizontalDragListener]);
 
 	const verticalGutterMouseDownListener = useCallback(() => {
-		const container = containerRef.current;
-		if (!container) return;
-		[
-			container,
-			document.body,
-			...Array.from(
-				container.getElementsByClassName(
-					"gutter"
-				) as HTMLCollectionOf<HTMLElement>
-			)
-		].forEach((elem) => {
-			elem.style.cursor = "row-resize";
-		});
+		document.body.style.cursor = "row-resize";
+		setDragState(DragState.VERTICAL);
 		gutterMouseDownListener();
 		window.addEventListener("mousemove", verticalDragListener);
 	}, [gutterMouseDownListener, verticalDragListener]);
 
 	const windowMouseUpListener = useCallback(() => {
-		const container = containerRef.current;
-		if (!container) return;
-		[
-			container,
-			document.body,
-			...Array.from(
-				container.getElementsByClassName(
-					"gutter"
-				) as HTMLCollectionOf<HTMLElement>
-			)
-		].forEach((elem) => {
-			elem.style.userSelect = "";
-			elem.style.cursor = "";
-		});
+		document.body.style.userSelect = "";
+		document.body.style.cursor = "";
 		window.removeEventListener("mousemove", horizontalDragListener);
 		window.removeEventListener("mousemove", verticalDragListener);
+		setDragState(DragState.NONE);
 	}, [horizontalDragListener, verticalDragListener]);
+
+	const gutterDoubleClickListener = useCallback(() => {
+		setWidthResize(() => defaultWidth);
+		setHeightResize(() => defaultHeight);
+	}, [defaultHeight, defaultWidth]);
 
 	useEffect(() => {
 		window.addEventListener("mouseup", windowMouseUpListener);
@@ -208,47 +172,71 @@ const ResizableContainer = ({
 
 	return (
 		<div
-			className={classes.container}
+			className={clsx(
+				classes.container,
+				dragState === DragState.VERTICAL && classes.draggingVertical,
+				dragState === DragState.HORIZONTAL && classes.draggingHorizontal
+			)}
 			style={{
-				width: horizontal ? defaultWidth : "100%",
-				height: vertical ? defaultHeight : "100%",
+				width: horizontal ? widthResize : "100%",
+				height: vertical ? heightResize : "100%",
 				minWidth,
 				maxWidth,
 				minHeight,
-				maxHeight
+				maxHeight,
+				marginTop: top ? "-10px" : "",
+				marginBottom: top ? "-10px" : "",
+				marginLeft: left ? "-10px" : "",
+				marginRight: right ? "-10px" : ""
 			}}
 			ref={containerRef}
 		>
 			{top && (
 				<div
-					className={clsx(classes.gutter, "top", "gutter")}
-					onMouseDown={() => {
-						verticalGutterMouseDownListener();
-					}}
+					className={clsx(
+						classes.gutter,
+						classes.gutterTop,
+						dragState === DragState.VERTICAL &&
+							classes.draggingVertical
+					)}
+					onMouseDown={verticalGutterMouseDownListener}
+					onDoubleClick={gutterDoubleClickListener}
 				/>
 			)}
 			{bottom && (
 				<div
-					className={clsx(classes.gutter, "bottom", "gutter")}
-					onMouseDown={() => {
-						verticalGutterMouseDownListener();
-					}}
+					className={clsx(
+						classes.gutter,
+						classes.gutterBottom,
+						dragState === DragState.VERTICAL &&
+							classes.draggingVertical
+					)}
+					onMouseDown={verticalGutterMouseDownListener}
+					onDoubleClick={gutterDoubleClickListener}
 				/>
 			)}
 			{left && (
 				<div
-					className={clsx(classes.gutter, "left", "gutter")}
-					onMouseDown={() => {
-						horizontalGutterMouseDownListener();
-					}}
+					className={clsx(
+						classes.gutter,
+						classes.gutterLeft,
+						dragState === DragState.HORIZONTAL &&
+							classes.draggingHorizontal
+					)}
+					onMouseDown={horizontalGutterMouseDownListener}
+					onDoubleClick={gutterDoubleClickListener}
 				/>
 			)}
 			{right && (
 				<div
-					className={clsx(classes.gutter, "right", "gutter")}
-					onMouseDown={() => {
-						horizontalGutterMouseDownListener();
-					}}
+					className={clsx(
+						classes.gutter,
+						classes.gutterRight,
+						dragState === DragState.HORIZONTAL &&
+							classes.draggingHorizontal
+					)}
+					onMouseDown={horizontalGutterMouseDownListener}
+					onDoubleClick={gutterDoubleClickListener}
 				/>
 			)}
 			<main className={classes.content}>{children}</main>
