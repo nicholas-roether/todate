@@ -2,7 +2,7 @@ import { makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import React from "react";
 import { useEffect } from "react";
-import { usePrev } from "../hooks";
+import { useOngoingTouchesRef, usePrev } from "../hooks";
 
 const useStyles = makeStyles((theme) => ({
 	container: {
@@ -51,55 +51,35 @@ const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 	const topPageRef = React.useRef<HTMLDivElement>(null);
 	const containerRef = React.useRef<HTMLDivElement>(null);
 	const scrollingRef = React.useRef<boolean>(false);
-	const ongoingTouches = React.useRef<Touch[]>([]);
+	const [ongoingTouchesRef, onTouchStart, onTouchEnd] =
+		useOngoingTouchesRef();
 
-	// Transition animation
-	useEffect(() => {
-		if (!topPageRef.current || !bottomPageRef.current) return;
-		if (prevPage !== null && prevPage < page) {
-			topPageRef.current.style.top = "-100%";
-			bottomPageRef.current.style.bottom = "0";
-		} else if (prevPage !== null && prevPage > page) {
-			topPageRef.current.style.top = "0";
-			bottomPageRef.current.style.bottom = "-100%";
-		}
-	}, [page, prevPage]);
-
-	// Scroll/Drag listener
-	useEffect(() => {
-		if (!containerRef.current || !onUpdatePage) return;
-		function tryUpdateBy(amount: number) {
+	const tryUpdateBy = React.useCallback(
+		(amount: number) => {
 			if (scrollingRef.current) return;
 			setTimeout(() => {
 				onUpdatePage?.(amount);
 			});
 			scrollingRef.current = true;
 			setTimeout(() => (scrollingRef.current = false), SCROLL_COOLDOWN);
-		}
-		containerRef.current.addEventListener("wheel", (evt) => {
+		},
+		[onUpdatePage]
+	);
+
+	const onWheel = React.useCallback(
+		(evt: React.WheelEvent) => {
+			console.log("test");
 			if (evt.deltaY == 0) return;
 			tryUpdateBy(evt.deltaY > 0 ? 1 : -1);
-		});
-		containerRef.current.addEventListener("touchstart", (evt) => {
-			evt.preventDefault();
-			ongoingTouches.current = Array.from(evt.changedTouches);
-		});
-		containerRef.current.addEventListener("touchend", (evt) => {
-			evt.preventDefault();
-			ongoingTouches.current.forEach((val, i) => {
-				if (
-					Array.from(evt.changedTouches).find(
-						(touch) => touch.identifier == val.identifier
-					)
-				)
-					ongoingTouches.current.splice(i, 1);
-			});
-		});
-		containerRef.current.addEventListener("touchmove", (evt) => {
-			evt.preventDefault();
-			if (scrollingRef.current) return;
+		},
+		[tryUpdateBy]
+	);
+
+	const onTouchMove = React.useCallback(
+		(evt: React.TouchEvent) => {
+			if (!ongoingTouchesRef.current) return;
 			for (const touch of Array.from(evt.changedTouches)) {
-				const prevState = ongoingTouches.current.find(
+				const prevState = ongoingTouchesRef.current.find(
 					(prevTouch) => prevTouch.identifier == touch.identifier
 				);
 				if (!prevState) return;
@@ -113,45 +93,69 @@ const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 					return;
 				}
 			}
-		});
-	}, [onUpdatePage]);
+		},
+		[ongoingTouchesRef, tryUpdateBy]
+	);
+
+	// Transition animation
+	useEffect(() => {
+		if (!topPageRef.current || !bottomPageRef.current) return;
+		if (prevPage !== null && prevPage < page) {
+			topPageRef.current.style.top = "-100%";
+			bottomPageRef.current.style.bottom = "0";
+		} else if (prevPage !== null && prevPage > page) {
+			topPageRef.current.style.top = "0";
+			bottomPageRef.current.style.bottom = "-100%";
+		}
+	}, [page, prevPage]);
+
+	let content: React.ReactNode;
 
 	if (prevPage == null || prevPage == page) {
-		return (
-			<div ref={containerRef} className={classes.container}>
-				<div className={classes.pageContainer}>{builder(page)}</div>
-			</div>
+		content = <div className={classes.pageContainer}>{builder(page)}</div>;
+	} else {
+		const forwards = page > prevPage;
+		const currentPageContent = builder(page);
+		const prevPageContent = builder(prevPage);
+
+		content = (
+			<>
+				<div
+					ref={topPageRef}
+					className={clsx(
+						classes.pageContainer,
+						classes.topPage,
+						!forwards && classes.startAboveScreen
+					)}
+					key={`top-#${forwards ? prevPage : page}`}
+				>
+					{forwards ? prevPageContent : currentPageContent}
+				</div>
+				<div
+					ref={bottomPageRef}
+					className={clsx(
+						classes.pageContainer,
+						classes.bottomPage,
+						forwards && classes.startBelowScreen
+					)}
+					key={`bottom-#${forwards ? page : prevPage}`}
+				>
+					{forwards ? currentPageContent : prevPageContent}
+				</div>
+			</>
 		);
 	}
 
-	const forwards = page > prevPage;
-	const currentPageContent = builder(page);
-	const prevPageContent = builder(prevPage);
-
 	return (
-		<div ref={containerRef} className={classes.container}>
-			<div
-				ref={topPageRef}
-				className={clsx(
-					classes.pageContainer,
-					classes.topPage,
-					!forwards && classes.startAboveScreen
-				)}
-				key={`top-#${forwards ? prevPage : page}`}
-			>
-				{forwards ? prevPageContent : currentPageContent}
-			</div>
-			<div
-				ref={bottomPageRef}
-				className={clsx(
-					classes.pageContainer,
-					classes.bottomPage,
-					forwards && classes.startBelowScreen
-				)}
-				key={`bottom-#${forwards ? page : prevPage}`}
-			>
-				{forwards ? currentPageContent : prevPageContent}
-			</div>
+		<div
+			ref={containerRef}
+			className={classes.container}
+			onTouchStart={onTouchStart}
+			onTouchEnd={onTouchEnd}
+			onWheel={onWheel}
+			onTouchMove={onTouchMove}
+		>
+			{content}
 		</div>
 	);
 };
