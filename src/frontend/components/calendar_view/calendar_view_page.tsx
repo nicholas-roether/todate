@@ -1,5 +1,6 @@
 import { makeStyles, Typography } from "@material-ui/core";
 import React from "react";
+import { FormattedDate, useIntl } from "react-intl";
 import { findClosestMonday, range } from "../../utils";
 import CalendarViewTile from "./calendar_view_tile";
 
@@ -48,22 +49,6 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-const monthNameDateFormat = Intl.DateTimeFormat([], {
-	month: "long",
-	year: "numeric"
-});
-
-const weekdayNameDateFormat = Intl.DateTimeFormat([], {
-	weekday: "short"
-});
-
-const weekdayNames: string[] = [];
-const testDate = new Date(259200000);
-for (let i = 0; i < 7; i++) {
-	testDate.setDate(testDate.getDate() + 1);
-	weekdayNames.push(weekdayNameDateFormat.format(testDate));
-}
-
 const CalendarViewPage = ({
 	date,
 	today,
@@ -71,6 +56,7 @@ const CalendarViewPage = ({
 	tileContent = []
 }: CalendarViewPageProps) => {
 	const classes = useStyles();
+	const intl = useIntl();
 	date = new Date(date);
 	date.setDate(1);
 	date.setHours(0, 0, 0, 0);
@@ -78,11 +64,20 @@ const CalendarViewPage = ({
 		today = new Date(today);
 		today.setHours(0, 0, 0, 0);
 	}
+
+	const weekdayNames: string[] = [];
+	const testDate = new Date(259200000);
+	for (let i = 0; i < 7; i++) {
+		testDate.setDate(testDate.getDate() + 1);
+		weekdayNames.push(intl.formatDate(testDate, { weekday: "short" }));
+	}
+
 	return (
 		<div className={classes.container}>
 			<header className={classes.header}>
 				<Typography variant="h4">
-					{monthNameDateFormat.format(date)}
+					{/* {monthNameDateFormat.format(date)} */}
+					<FormattedDate value={date} month="long" year="numeric" />
 				</Typography>
 				<hr className={classes.line} />
 			</header>

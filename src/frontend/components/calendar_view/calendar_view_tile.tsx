@@ -2,11 +2,7 @@ import { Card, CardContent, makeStyles, Typography } from "@material-ui/core";
 import clsx from "clsx";
 import React from "react";
 import { EventHandler } from "react";
-
-// TODO extract locale
-const dateFormatDay = new Intl.DateTimeFormat([], {
-	day: "numeric"
-});
+import { useIntl } from "react-intl";
 
 const useStyles = makeStyles((theme) => ({
 	dayText: {
@@ -62,7 +58,7 @@ const CalendarViewTile = ({
 }: React.PropsWithChildren<CalendarViewTileProps>) => {
 	const classes = useStyles();
 	date.setHours(0, 0, 0, 0);
-	const dayText = dateFormatDay.format(date.getTime());
+	const dayText = date.getDate().toString();
 	return (
 		<Card
 			variant="outlined"
