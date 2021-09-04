@@ -3,6 +3,7 @@ import React from "react";
 import CalendarView from "../src/frontend/components/calendar_view";
 import Page from "../src/frontend/components/page";
 import ResizableContainer from "../src/frontend/components/resizable_container";
+import Clock from "../src/frontend/components/clock";
 
 const Index = () => {
 	const [page, setPage] = React.useState<number>(0);
@@ -16,7 +17,7 @@ const Index = () => {
 					maxWidth="min(600px, calc(100% - 800px))"
 				>
 					<Paper square style={{ height: "100%" }}>
-						test
+						<Clock />
 					</Paper>
 				</ResizableContainer>
 				<div style={{ flex: "1" }}>

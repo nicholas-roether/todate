@@ -1,1 +1,3 @@
-[]
+{
+	"clock": "Heute ist {today, date, ::eeeeeMMddyyyy}{br}{today, date, ::hhmm}"
+}
