@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/core";
 import clsx from "clsx";
-import React, { PropsWithChildren, useCallback, useEffect } from "react";
+import React from "react";
 
 export interface ResizableContainerProps {
 	top?: boolean;
@@ -95,7 +95,7 @@ const ResizableContainer = ({
 	minHeight = 0,
 	maxHeight = "100%",
 	children
-}: PropsWithChildren<ResizableContainerProps>) => {
+}: React.PropsWithChildren<ResizableContainerProps>) => {
 	const classes = useStyles();
 	const containerRef = React.useRef<HTMLDivElement>(null);
 	const [dragState, setDragState] = React.useState<DragState>(DragState.NONE);
@@ -106,11 +106,11 @@ const ResizableContainer = ({
 	const vertical = top || bottom;
 	const horizontal = left || right;
 
-	const gutterMouseDownListener = useCallback(() => {
+	const gutterMouseDownListener = React.useCallback(() => {
 		document.body.style.userSelect = "none";
 	}, []);
 
-	const horizontalDragListener = useCallback(
+	const horizontalDragListener = React.useCallback(
 		(evt: MouseEvent) => {
 			if (!containerRef.current) return;
 			if (!left && !right) return;
@@ -124,7 +124,7 @@ const ResizableContainer = ({
 		[left, right]
 	);
 
-	const verticalDragListener = useCallback(
+	const verticalDragListener = React.useCallback(
 		(evt: MouseEvent) => {
 			if (!containerRef.current) return;
 			if (!top && !bottom) return;
@@ -139,21 +139,21 @@ const ResizableContainer = ({
 		[bottom, top]
 	);
 
-	const horizontalGutterMouseDownListener = useCallback(() => {
+	const horizontalGutterMouseDownListener = React.useCallback(() => {
 		document.body.style.cursor = "col-resize";
 		setDragState(DragState.HORIZONTAL);
 		gutterMouseDownListener();
 		window.addEventListener("mousemove", horizontalDragListener);
 	}, [gutterMouseDownListener, horizontalDragListener]);
 
-	const verticalGutterMouseDownListener = useCallback(() => {
+	const verticalGutterMouseDownListener = React.useCallback(() => {
 		document.body.style.cursor = "row-resize";
 		setDragState(DragState.VERTICAL);
 		gutterMouseDownListener();
 		window.addEventListener("mousemove", verticalDragListener);
 	}, [gutterMouseDownListener, verticalDragListener]);
 
-	const windowMouseUpListener = useCallback(() => {
+	const windowMouseUpListener = React.useCallback(() => {
 		document.body.style.userSelect = "";
 		document.body.style.cursor = "";
 		window.removeEventListener("mousemove", horizontalDragListener);
@@ -161,12 +161,12 @@ const ResizableContainer = ({
 		setDragState(DragState.NONE);
 	}, [horizontalDragListener, verticalDragListener]);
 
-	const gutterDoubleClickListener = useCallback(() => {
+	const gutterDoubleClickListener = React.useCallback(() => {
 		setWidthResize(() => defaultWidth);
 		setHeightResize(() => defaultHeight);
 	}, [defaultHeight, defaultWidth]);
 
-	useEffect(() => {
+	React.useEffect(() => {
 		window.addEventListener("mouseup", windowMouseUpListener);
 	}, [windowMouseUpListener]);
 

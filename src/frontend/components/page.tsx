@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import Head from "next/head";
 import { makeStyles } from "@material-ui/core";
 
@@ -17,7 +17,7 @@ interface PageProps {
 	title?: string;
 }
 
-const Page = ({ title, children }: PropsWithChildren<PageProps>) => {
+const Page = ({ title, children }: React.PropsWithChildren<PageProps>) => {
 	const classes = useStyles();
 	return (
 		<>

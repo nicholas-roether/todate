@@ -1,6 +1,6 @@
 import { Card, CardContent, makeStyles, Typography } from "@material-ui/core";
 import clsx from "clsx";
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import { EventHandler } from "react";
 
 // TODO extract locale
@@ -59,7 +59,7 @@ const CalendarViewTile = ({
 	today = false,
 	onClick,
 	children
-}: PropsWithChildren<CalendarViewTileProps>) => {
+}: React.PropsWithChildren<CalendarViewTileProps>) => {
 	const classes = useStyles();
 	date.setHours(0, 0, 0, 0);
 	const dayText = dateFormatDay.format(date.getTime());

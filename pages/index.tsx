@@ -1,5 +1,5 @@
 import { Paper } from "@material-ui/core";
-import React, { useEffect } from "react";
+import React from "react";
 import CalendarView from "../src/frontend/components/calendar_view";
 import Page from "../src/frontend/components/page";
 import ResizableContainer from "../src/frontend/components/resizable_container";

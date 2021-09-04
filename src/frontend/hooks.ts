@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 
 function usePrev<T>(value: T): T | null {
 	const valueRef = React.useRef<T>();
@@ -14,12 +14,12 @@ function useOngoingTouchesRef(): [
 	onTouchEnd: React.EventHandler<React.TouchEvent>
 ] {
 	const touchesRef = React.useRef<React.Touch[]>([]);
-	const onTouchStart = useCallback((evt: React.TouchEvent) => {
+	const onTouchStart = React.useCallback((evt: React.TouchEvent) => {
 		Array.from(evt.changedTouches).forEach((touch) =>
 			touchesRef.current.push(touch)
 		);
 	}, []);
-	const onTouchEnd = useCallback((evt: React.TouchEvent) => {
+	const onTouchEnd = React.useCallback((evt: React.TouchEvent) => {
 		Array.from(evt.changedTouches).forEach((touch) =>
 			touchesRef.current.splice(
 				touchesRef.current.findIndex(
