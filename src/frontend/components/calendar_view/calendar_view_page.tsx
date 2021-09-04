@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 	gridTile: {
 		margin: "-1px",
-		overflow: "shown"
+		overflow: "visible"
 	}
 }));
 

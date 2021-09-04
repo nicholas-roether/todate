@@ -186,10 +186,10 @@ const ResizableContainer = ({
 				maxWidth,
 				minHeight,
 				maxHeight,
-				marginTop: top ? "-10px" : "",
-				marginBottom: top ? "-10px" : "",
-				marginLeft: left ? "-10px" : "",
-				marginRight: right ? "-10px" : ""
+				marginTop: top ? "-10px" : undefined,
+				marginBottom: top ? "-10px" : undefined,
+				marginLeft: left ? "-10px" : undefined,
+				marginRight: right ? "-10px" : undefined
 			}}
 			ref={containerRef}
 		>
