@@ -34,7 +34,8 @@ const useStyles = makeStyles(() => ({
 		gridRowStart: "top-inner",
 		gridRowEnd: "bottom-inner",
 		gridColumnStart: "left-inner",
-		gridColumnEnd: "right-inner"
+		gridColumnEnd: "right-inner",
+		overflow: "hidden"
 	},
 	gutter: {
 		position: "relative"

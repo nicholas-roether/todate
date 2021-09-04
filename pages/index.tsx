@@ -13,8 +13,8 @@ const Index = () => {
 				<ResizableContainer
 					right
 					defaultWidth={350}
-					minWidth={80}
-					maxWidth="min(600px, calc(100% - 800px))"
+					minWidth={160}
+					maxWidth="min(600px, max(calc(100% - 800px), 160px))"
 				>
 					<Paper square style={{ height: "100%" }}>
 						<Clock />
