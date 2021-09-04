@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect } from "react";
 import CalendarViewPage, {
 	CalendarTileContentMap
-} from "./calendar_view_desktop/calendar_view_page";
+} from "./calendar_view/calendar_view_page";
 import PageView from "../page_view";
 
 export interface CalendarViewProps {

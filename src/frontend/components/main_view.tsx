@@ -1,8 +1,9 @@
-import { Drawer, makeStyles, Paper } from "@material-ui/core";
+import { Box, Drawer, makeStyles, Paper } from "@material-ui/core";
 import React from "react";
-import CalendarView from "./main_view_desktop/calendar_view_desktop";
+import CalendarView from "./main_view/calendar_view";
 import Clock from "./clock";
 import ResizableContainer from "./resizable_container";
+import CalendarSidebarDesktop from "./main_view/calendar_sidebar";
 
 const useStyles = makeStyles(() => ({
 	container: {
@@ -20,29 +21,22 @@ const useStyles = makeStyles(() => ({
 	}
 }));
 
-interface MainViewDesktopProps {
+interface MainViewProps {
 	startDate: Date;
 	page: number;
 	onUpdatePage: (pageDiff: number) => void;
 }
 
-const MainViewDesktop = ({
-	startDate,
-	page,
-	onUpdatePage
-}: MainViewDesktopProps) => {
+const MainView = ({ startDate, page, onUpdatePage }: MainViewProps) => {
 	const classes = useStyles();
 	return (
 		<div className={classes.container}>
-			<ResizableContainer
+			{/* <ResizableContainer
 				right
 				defaultWidth={350}
 				minWidth={160}
 				maxWidth="min(600px, max(calc(100% - 800px), 160px))"
 			>
-				{/* <Paper square style={{ height: "100%" }}>
-					<Clock />
-				</Paper> */}
 				<Drawer
 					variant="permanent"
 					open
@@ -58,9 +52,19 @@ const MainViewDesktop = ({
 					page={page}
 					onUpdatePage={onUpdatePage}
 				/>
-			</div>
+			</div> */}
+			<CalendarSidebarDesktop
+				startDate={startDate}
+				page={page}
+				onUpdatePage={onUpdatePage}
+			/>
+			<CalendarView
+				startDate={startDate}
+				page={page}
+				onUpdatePage={onUpdatePage}
+			/>
 		</div>
 	);
 };
 
-export default MainViewDesktop;
+export default MainView;
