@@ -18,6 +18,8 @@ export interface ResizableContainerProps {
 const useStyles = makeStyles(() => ({
 	container: {
 		display: "grid",
+		position: "relative",
+		zIndex: 1,
 		// eslint-disable-next-line prettier/prettier
 		gridTemplateAreas:
 			"'. 			.			top-outer 		.			.			'\
