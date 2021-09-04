@@ -68,7 +68,6 @@ const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 
 	const onWheel = React.useCallback(
 		(evt: React.WheelEvent) => {
-			console.log("test");
 			if (evt.deltaY == 0) return;
 			tryUpdateBy(evt.deltaY > 0 ? 1 : -1);
 		},

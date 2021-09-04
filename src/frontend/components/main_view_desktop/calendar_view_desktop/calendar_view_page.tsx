@@ -1,7 +1,7 @@
 import { makeStyles, Typography } from "@material-ui/core";
 import React from "react";
 import { FormattedDate, useIntl } from "react-intl";
-import { findClosestMonday, range } from "../../utils";
+import { findClosestMonday, range } from "../../../utils";
 import CalendarViewTile from "./calendar_view_tile";
 
 export interface CalendarTileContentMapElement {

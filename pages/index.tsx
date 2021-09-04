@@ -1,35 +1,20 @@
 import { Paper } from "@material-ui/core";
 import React from "react";
-import CalendarView from "../src/frontend/components/calendar_view";
+import CalendarView from "../src/frontend/components/main_view_desktop/calendar_view_desktop";
 import Page from "../src/frontend/components/page";
 import ResizableContainer from "../src/frontend/components/resizable_container";
 import Clock from "../src/frontend/components/clock";
+import MainViewDesktop from "../src/frontend/components/main_view_desktop";
 
 const Index = () => {
 	const [page, setPage] = React.useState<number>(0);
 	return (
 		<Page title="home">
-			<div style={{ display: "flex", height: "100%" }}>
-				<ResizableContainer
-					right
-					defaultWidth={350}
-					minWidth={160}
-					maxWidth="min(600px, max(calc(100% - 800px), 160px))"
-				>
-					<Paper square style={{ height: "100%" }}>
-						<Clock />
-					</Paper>
-				</ResizableContainer>
-				<div style={{ flex: "1" }}>
-					<CalendarView
-						startDate={new Date()}
-						page={page}
-						onUpdatePage={(pageDiff) =>
-							setPage((page) => page + pageDiff)
-						}
-					/>
-				</div>
-			</div>
+			<MainViewDesktop
+				startDate={new Date()}
+				page={page}
+				onUpdatePage={(pageDiff) => setPage((page) => page + pageDiff)}
+			/>
 		</Page>
 	);
 };
