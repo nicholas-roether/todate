@@ -7,6 +7,7 @@ import { useOngoingTouchesRef, usePrev } from "../hooks";
 const useStyles = makeStyles((theme) => ({
 	container: {
 		height: "100%",
+		width: "100%",
 		overflow: "hidden",
 		position: "relative",
 		top: 0,

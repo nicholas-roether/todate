@@ -4,6 +4,15 @@ import CalendarViewPage, {
 	CalendarTileContentMap
 } from "./calendar_view/calendar_view_page";
 import PageView from "../page_view";
+import { makeStyles } from "@material-ui/core";
+
+const useStyles = makeStyles((theme) => ({
+	container: {
+		padding: theme.spacing(0, 2),
+		width: "100%",
+		height: "100%"
+	}
+}));
 
 export interface CalendarViewProps {
 	startDate: Date;
@@ -21,6 +30,7 @@ const CalendarView = ({
 	onTileClick
 }: CalendarViewProps) => {
 	const [today, setToday] = React.useState<Date>(new Date());
+	const classes = useStyles();
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -33,22 +43,26 @@ const CalendarView = ({
 	startDate.setDate(1);
 	startDate.setHours(0, 0, 0, 0);
 	return (
-		<PageView
-			page={page}
-			onUpdatePage={onUpdatePage}
-			builder={(index) => {
-				const offsetDate = new Date(startDate);
-				offsetDate.setMonth(offsetDate.getMonth() + index);
-				return (
-					<CalendarViewPage
-						date={offsetDate}
-						today={today}
-						tileContent={getTileContent?.(offsetDate.getMonth())}
-						onTileClick={onTileClick}
-					/>
-				);
-			}}
-		/>
+		<div className={classes.container}>
+			<PageView
+				page={page}
+				onUpdatePage={onUpdatePage}
+				builder={(index) => {
+					const offsetDate = new Date(startDate);
+					offsetDate.setMonth(offsetDate.getMonth() + index);
+					return (
+						<CalendarViewPage
+							date={offsetDate}
+							today={today}
+							tileContent={getTileContent?.(
+								offsetDate.getMonth()
+							)}
+							onTileClick={onTileClick}
+						/>
+					);
+				}}
+			/>
+		</div>
 	);
 };
 

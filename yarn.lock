@@ -947,7 +947,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-transition-group@npm:^4.2.0":
+"@types/react-transition-group@npm:^4.2.0, @types/react-transition-group@npm:^4.4.2":
   version: 4.4.2
   resolution: "@types/react-transition-group@npm:4.4.2"
   dependencies:
@@ -6692,7 +6692,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"react-transition-group@npm:^4.4.0":
+"react-transition-group@npm:^4.4.0, react-transition-group@npm:^4.4.2":
   version: 4.4.2
   resolution: "react-transition-group@npm:4.4.2"
   dependencies:
@@ -7727,6 +7727,7 @@ resolve@^2.0.0-next.3:
     "@types/next": ^9.0.0
     "@types/node": ^16.6.0
     "@types/react": ^17.0.17
+    "@types/react-transition-group": ^4.4.2
     "@types/smoothscroll-polyfill": ^0.3.1
     "@typescript-eslint/eslint-plugin": ^4.29.3
     "@typescript-eslint/parser": ^4.29.3
@@ -7758,6 +7759,7 @@ resolve@^2.0.0-next.3:
     react: 17.0.2
     react-dom: 17.0.2
     react-intl: ^5.20.10
+    react-transition-group: ^4.4.2
     smoothscroll-polyfill: ^0.4.4
     swr: ^0.5.6
     typescript: ^4.3.5
