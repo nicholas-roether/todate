@@ -1,5 +1,6 @@
 import {
 	Box,
+	Collapse,
 	Divider,
 	Drawer,
 	Fade,
@@ -57,27 +58,17 @@ const useStyles = makeStyles((theme) => ({
 			easing: theme.transitions.easing.sharp,
 			duration: theme.transitions.duration.short
 		}),
+		flex: 1,
 		padding: theme.spacing(0, 2),
 		overflowX: "hidden",
-		position: "relative",
-		width: "100%",
-		height: "100%"
+		display: "flex",
+		flexDirection: "column"
 	},
 	closedContent: {
 		padding: theme.spacing(0, 1)
 	},
-	clockSection: {
-		height: "15%",
-		overflowX: "hidden",
-		overflowY: "auto",
-		position: "relative",
-		zIndex: 1
-	},
 	clockWrapper: {
 		width: drawerWidth - theme.spacing(2)
-	},
-	centered: {
-		textAlign: "center"
 	},
 	listPickerTextField: {
 		"& input": {
@@ -88,36 +79,19 @@ const useStyles = makeStyles((theme) => ({
 			textAlign: "center"
 		}
 	},
-	spacer: {
-		marginTop: theme.spacing(6)
-	},
 	inputSection: {
-		transition: theme.transitions.create("padding", {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.short
+		transition: theme.transitions.create(["padding"], {
+			easing: theme.transitions.easing.easeIn,
+			duration: theme.transitions.duration.leavingScreen
 		}),
-		position: "absolute",
-		top: 0,
-		left: 0,
-		width: "100%",
-		height: `calc(100% - ${theme.spacing(10)}px)`,
-		padding: theme.spacing(0, 2),
 		display: "flex",
 		flexDirection: "column",
-		justifyContent: "center",
-		alignItems: "center"
+		justifyContent: "space-around",
+		alignItems: "center",
+		maxHeight: `calc(100% - ${2 * theme.spacing(8)}px)`
 	},
-	closedInputSection: {
-		padding: theme.spacing(0, 1)
-	},
-	inputContainer: {
-		height: "60%",
-		overflowY: "auto",
-		width: "100%",
-		display: "flex",
-		flexDirection: "column",
-		justifyContent: "space-between",
-		alignItems: "center"
+	input: {
+		marginTop: theme.spacing(5)
 	}
 }));
 
@@ -165,19 +139,17 @@ const CalendarSidebarDesktop = ({
 					[classes.closedContent]: !open
 				})}
 			>
-				<div className={classes.clockSection}>
-					<Fade in={open}>
-						<div className={classes.clockWrapper}>
-							<Clock />
-						</div>
-					</Fade>
-				</div>
-				<div
-					className={clsx(classes.inputSection, {
-						[classes.closedInputSection]: !open
-					})}
-				>
-					<div className={classes.inputContainer}>
+				<Fade in={open}>
+					<div>
+						<Collapse in={open}>
+							<div className={classes.clockWrapper}>
+								<Clock />
+							</div>
+						</Collapse>
+					</div>
+				</Fade>
+				<div className={classes.inputSection}>
+					<div className={classes.input}>
 						<YearPicker
 							year={year}
 							onYearChange={setYear}
@@ -187,6 +159,8 @@ const CalendarSidebarDesktop = ({
 								textField: classes.listPickerTextField
 							}}
 						/>
+					</div>
+					<div className={classes.input}>
 						<MonthPicker
 							month={month}
 							onMonthChange={setMonth}
