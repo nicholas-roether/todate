@@ -54,8 +54,8 @@ const YearPicker = ({
 		<ListPicker
 			value={year.toString()}
 			tryUpdateValue={tryUpdateYear}
-			onValueUp={() => onYearChange?.(year + 1)}
-			onValueDown={() => onYearChange?.(year - 1)}
+			onValueUp={() => onYearChange?.(year - 1)}
+			onValueDown={() => onYearChange?.(year + 1)}
 			disableUp={year == maxYear}
 			disableDown={year == minYear}
 			error={Boolean(error)}

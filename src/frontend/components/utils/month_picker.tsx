@@ -85,8 +85,8 @@ const MonthPicker = ({
 				month: size == "small" ? "short" : "long"
 			})}
 			tryUpdateValue={tryUpdateMonth}
-			onValueUp={() => onMonthChange?.(month + 1)}
-			onValueDown={() => onMonthChange?.(month - 1)}
+			onValueUp={() => onMonthChange?.(month - 1)}
+			onValueDown={() => onMonthChange?.(month + 1)}
 			disableUp={month == 0}
 			disableDown={month == 11}
 			error={Boolean(error)}

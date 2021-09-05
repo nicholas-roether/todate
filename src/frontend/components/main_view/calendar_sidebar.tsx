@@ -66,8 +66,12 @@ const useStyles = makeStyles((theme) => ({
 	closedContent: {
 		padding: theme.spacing(0, 1)
 	},
-	section: {
-		paddingBottom: theme.spacing(2)
+	clockSection: {
+		height: "15%",
+		overflowX: "hidden",
+		overflowY: "auto",
+		position: "relative",
+		zIndex: 1
 	},
 	clockWrapper: {
 		width: drawerWidth - theme.spacing(2)
@@ -108,6 +112,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 	inputContainer: {
 		height: "60%",
+		overflowY: "auto",
 		width: "100%",
 		display: "flex",
 		flexDirection: "column",
@@ -160,7 +165,7 @@ const CalendarSidebarDesktop = ({
 					[classes.closedContent]: !open
 				})}
 			>
-				<div className={classes.section}>
+				<div className={classes.clockSection}>
 					<Fade in={open}>
 						<div className={classes.clockWrapper}>
 							<Clock />

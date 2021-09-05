@@ -11,7 +11,7 @@ interface LocaleManagerProps {
 }
 
 const LocaleManager = ({
-	defaultValue = Locale.GERMAN,
+	defaultValue = Locale.ENGLISH,
 	children
 }: React.PropsWithChildren<LocaleManagerProps>) => {
 	const [locale, setLocale] = React.useState(defaultValue);
