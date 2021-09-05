@@ -1,3 +1,5 @@
 {
-	"clock": "Heute ist {today, date, ::eeeeeMMddyyyy}{br}{today, date, ::hhmm}"
+	"clock": "Today is {today, date, ::eeeeeyyyyMMdd}{br}{today, date, ::hhmm}",
+	"year": "Year",
+	"month": "Month"
 }

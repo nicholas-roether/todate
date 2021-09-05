@@ -40,12 +40,18 @@ export interface PageViewProps {
 	builder: (index: number) => React.ReactNode;
 	page?: number;
 	onUpdatePage?: (pageDiff: number) => void;
+	transition?: "scroll" | "fade";
 }
 
 const SCROLL_COOLDOWN = 300;
 const DRAG_THRESHOLD = 20;
 
-const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
+const PageView = ({
+	builder,
+	page = 0,
+	onUpdatePage,
+	transition = "scroll"
+}: PageViewProps) => {
 	const classes = useStyles();
 	const prevPage = usePrev(page);
 	const bottomPageRef = React.useRef<HTMLDivElement>(null);
