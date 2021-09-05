@@ -18,7 +18,8 @@ function validateMonthString(
 ): [isValid: boolean, errMessage: string | null] {
 	const monthNum = Number.parseInt(monthString);
 	if (validMonths.includes(monthString)) return [true, null];
-	if (monthNum !== NaN && monthNum >= 0 && monthNum < 12) return [true, null];
+	if (monthNum !== NaN && monthNum >= 1 && monthNum <= 12)
+		return [true, null];
 	return [false, "Must be a valid month"];
 }
 
@@ -66,12 +67,24 @@ const MonthPicker = ({
 					monthNum = shortMonthNames.indexOf(monthString);
 				else if (longMonthNames.includes(monthString))
 					monthNum = longMonthNames.indexOf(monthString);
-				else if (parsed != NaN) monthNum = parsed;
+				else if (parsed != NaN) monthNum = parsed - 1;
 				onMonthChange?.(monthNum);
 			}
 		},
 		[longMonthNames, onMonthChange, shortMonthNames, validMonths]
 	);
+
+	const onValueUp = React.useCallback(
+		() => onMonthChange?.(month - 1),
+		[month, onMonthChange]
+	);
+
+	console.log(month);
+
+	const onValueDown = React.useCallback(() => {
+		console.log(month);
+		onMonthChange?.(month + 1);
+	}, [month, onMonthChange]);
 
 	if (month < 0 || month > 11)
 		throw new Error(`Month ${month} is not valid.`);
@@ -85,8 +98,8 @@ const MonthPicker = ({
 				month: size == "small" ? "short" : "long"
 			})}
 			tryUpdateValue={tryUpdateMonth}
-			onValueUp={() => onMonthChange?.(month - 1)}
-			onValueDown={() => onMonthChange?.(month + 1)}
+			onValueUp={onValueUp}
+			onValueDown={onValueDown}
 			disableUp={month == 0}
 			disableDown={month == 11}
 			error={Boolean(error)}

@@ -111,13 +111,16 @@ const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 	// Transition animation
 	useEffect(() => {
 		if (!topPageRef.current || !bottomPageRef.current) return;
-		if (prevPage !== null && prevPage < page) {
-			topPageRef.current.style.top = "-100%";
-			bottomPageRef.current.style.bottom = "0";
-		} else if (prevPage !== null && prevPage > page) {
-			topPageRef.current.style.top = "0";
-			bottomPageRef.current.style.bottom = "-100%";
-		}
+		window.setTimeout(() => {
+			if (!topPageRef.current || !bottomPageRef.current) return;
+			if (prevPage !== null && prevPage < page) {
+				topPageRef.current.style.top = "-100%";
+				bottomPageRef.current.style.bottom = "0";
+			} else if (prevPage !== null && prevPage > page) {
+				topPageRef.current.style.top = "0";
+				bottomPageRef.current.style.bottom = "-100%";
+			}
+		});
 	}, [page, prevPage]);
 
 	let content: React.ReactNode;

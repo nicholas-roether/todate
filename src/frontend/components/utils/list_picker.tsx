@@ -89,7 +89,6 @@ const ListPicker = ({
 
 	const onChange = React.useCallback(
 		(evt: React.ChangeEvent<HTMLInputElement>) => {
-			console.log(evt.target.value);
 			if (!validValues || validValues.test(evt.target.value))
 				setValue(evt.target.value);
 		},
