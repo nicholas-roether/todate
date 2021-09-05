@@ -5,8 +5,8 @@ import {
 	TextFieldProps
 } from "@material-ui/core";
 import {
-	ArrowDownward as ArrowDownwardIcon,
-	ArrowUpward as ArrowUpwardIcon
+	KeyboardArrowDown as KeyboardArrowDownIcon,
+	KeyboardArrowUp as KeyboardArrowUpIcon
 } from "@material-ui/icons";
 import clsx from "clsx";
 import React from "react";
@@ -103,7 +103,7 @@ const ListPicker = ({
 				onClick={onValueUp}
 				disabled={disableUp}
 			>
-				<ArrowUpwardIcon />
+				<KeyboardArrowUpIcon />
 			</IconButton>
 			<form onSubmit={(evt) => console.log(evt)}>
 				<TextField
@@ -127,7 +127,7 @@ const ListPicker = ({
 				onClick={onValueDown}
 				disabled={disableDown}
 			>
-				<ArrowDownwardIcon />
+				<KeyboardArrowDownIcon />
 			</IconButton>
 		</div>
 	);
