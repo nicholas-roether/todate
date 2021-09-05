@@ -1,20 +1,16 @@
 import {
-	Box,
 	Collapse,
-	Divider,
 	Drawer,
 	Fade,
 	IconButton,
-	makeStyles,
-	Theme,
-	useTheme
+	makeStyles
 } from "@material-ui/core";
 import { ArrowForward as ArrowForwardIcon } from "@material-ui/icons";
 import clsx from "clsx";
 import React from "react";
+import { useCallback } from "react";
 import { useIntl } from "react-intl";
 import Clock from "../clock";
-import ListPicker from "../utils/list_picker";
 import MonthPicker from "../utils/month_picker";
 import Rotate180 from "../utils/rotate180";
 import YearPicker from "../utils/year_picker";
@@ -107,10 +103,29 @@ const CalendarSidebarDesktop = ({
 	onUpdatePage
 }: CalendarSidebarDesktopProps) => {
 	const [open, setOpen] = React.useState(true);
-	const [year, setYear] = React.useState(new Date().getFullYear());
-	const [month, setMonth] = React.useState(new Date().getMonth());
+	// const [year, setYear] = React.useState(startDate.getFullYear());
+	// const [month, setMonth] = React.useState(startDate.getMonth());
+	const date = new Date(startDate);
+	date.setMonth(startDate.getMonth() + page);
+	const year = date.getFullYear();
+	const month = date.getMonth();
 	const intl = useIntl();
 	const classes = useStyles();
+
+	const onYearChange = useCallback(
+		(newYear: number) => {
+			onUpdatePage?.((newYear - year) * 12);
+		},
+		[onUpdatePage, year]
+	);
+
+	const onMonthChange = useCallback(
+		(newMonth: number) => {
+			onUpdatePage?.(newMonth - month);
+		},
+		[month, onUpdatePage]
+	);
+
 	return (
 		<Drawer
 			variant="permanent"
@@ -152,7 +167,7 @@ const CalendarSidebarDesktop = ({
 					<div className={classes.input}>
 						<YearPicker
 							year={year}
-							onYearChange={setYear}
+							onYearChange={onYearChange}
 							label={intl.messages.year.toString()}
 							size={open ? "medium" : "small"}
 							classes={{
@@ -163,7 +178,7 @@ const CalendarSidebarDesktop = ({
 					<div className={classes.input}>
 						<MonthPicker
 							month={month}
-							onMonthChange={setMonth}
+							onMonthChange={onMonthChange}
 							label={intl.messages.month.toString()}
 							size={open ? "medium" : "small"}
 							classes={{

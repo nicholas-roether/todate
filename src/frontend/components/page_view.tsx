@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core";
+import { Grow, makeStyles, useTheme } from "@material-ui/core";
 import clsx from "clsx";
 import React from "react";
 import { useEffect } from "react";
@@ -33,6 +33,16 @@ const useStyles = makeStyles((theme) => ({
 	},
 	startAboveScreen: {
 		top: "-100%"
+	},
+	overlayPageContainer: {
+		position: "relative",
+		width: "100%",
+		height: "100%"
+	},
+	overlayedPage: {
+		position: "absolute",
+		width: "100%",
+		height: "100%"
 	}
 }));
 
@@ -40,18 +50,12 @@ export interface PageViewProps {
 	builder: (index: number) => React.ReactNode;
 	page?: number;
 	onUpdatePage?: (pageDiff: number) => void;
-	transition?: "scroll" | "fade";
 }
 
 const SCROLL_COOLDOWN = 300;
 const DRAG_THRESHOLD = 20;
 
-const PageView = ({
-	builder,
-	page = 0,
-	onUpdatePage,
-	transition = "scroll"
-}: PageViewProps) => {
+const PageView = ({ builder, page = 0, onUpdatePage }: PageViewProps) => {
 	const classes = useStyles();
 	const prevPage = usePrev(page);
 	const bottomPageRef = React.useRef<HTMLDivElement>(null);
@@ -60,6 +64,7 @@ const PageView = ({
 	const scrollingRef = React.useRef<boolean>(false);
 	const [ongoingTouchesRef, onTouchStart, onTouchEnd] =
 		useOngoingTouchesRef();
+	const theme = useTheme();
 
 	const tryUpdateBy = React.useCallback(
 		(amount: number) => {
@@ -119,7 +124,7 @@ const PageView = ({
 
 	if (prevPage == null || prevPage == page) {
 		content = <div className={classes.pageContainer}>{builder(page)}</div>;
-	} else {
+	} else if (Math.abs(prevPage - page) == 1) {
 		const forwards = page > prevPage;
 		const currentPageContent = builder(page);
 		const prevPageContent = builder(prevPage);
@@ -149,6 +154,33 @@ const PageView = ({
 					{forwards ? currentPageContent : prevPageContent}
 				</div>
 			</>
+		);
+	} else {
+		const currentPageContent = builder(page);
+		const prevPageContent = builder(prevPage);
+
+		content = (
+			<div className={classes.overlayPageContainer}>
+				<div className={classes.overlayedPage}>
+					<Grow in={false} appear key={`disappear-#${prevPage}`}>
+						<div className={classes.pageContainer}>
+							{prevPageContent}
+						</div>
+					</Grow>
+				</div>
+				<div className={classes.overlayedPage}>
+					<Grow
+						in={true}
+						timeout={theme.transitions.duration.leavingScreen}
+						appear
+						key={`appear-#${page}`}
+					>
+						<div className={classes.pageContainer}>
+							{currentPageContent}
+						</div>
+					</Grow>
+				</div>
+			</div>
 		);
 	}
 
