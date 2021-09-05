@@ -76,8 +76,12 @@ const CalendarViewPage = ({
 		<div className={classes.container}>
 			<header className={classes.header}>
 				<Typography variant="h4">
-					{/* {monthNameDateFormat.format(date)} */}
-					<FormattedDate value={date} month="long" year="numeric" />
+					<FormattedDate
+						value={date}
+						month="long"
+						year="numeric"
+						era={date.getFullYear() < 0 ? "short" : undefined}
+					/>
 				</Typography>
 				<hr className={classes.line} />
 			</header>
