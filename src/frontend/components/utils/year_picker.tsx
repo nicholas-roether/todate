@@ -36,10 +36,11 @@ const YearPicker = ({
 	const [error, setError] = React.useState<string | null>(null);
 
 	const tryUpdateYear = React.useCallback(
-		(yearString: string) => {
+		(yearString: string, showErrors: boolean) => {
 			const [valid, errorMessage] = validateYearString(yearString);
-			if (!valid) setError(errorMessage);
-			else {
+			if (!valid) {
+				if (showErrors) setError(errorMessage);
+			} else {
 				setError(null);
 				onYearChange?.(Number.parseInt(yearString));
 			}

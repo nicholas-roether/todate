@@ -53,13 +53,14 @@ const MonthPicker = ({
 	);
 
 	const tryUpdateMonth = React.useCallback(
-		(monthString: string) => {
+		(monthString: string, showErrors: boolean) => {
 			const [valid, errorMessage] = validateMonthString(
 				monthString,
 				validMonths
 			);
-			if (!valid) setError(errorMessage);
-			else {
+			if (!valid) {
+				if (showErrors) setError(errorMessage);
+			} else {
 				setError(null);
 				const parsed = Number.parseInt(monthString);
 				let monthNum = 0;
@@ -112,6 +113,7 @@ const MonthPicker = ({
 			placeholder={placeholder}
 			suggestions={longMonthNames}
 			autoSelect
+			live
 		/>
 	);
 };

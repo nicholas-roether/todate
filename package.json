@@ -14,7 +14,6 @@
 		"@auth0/nextjs-auth0": "^1.5.0",
 		"@material-ui/core": "^4.12.3",
 		"@material-ui/icons": "^4.11.2",
-		"@material-ui/lab": "^4.0.0-alpha.60",
 		"@types/smoothscroll-polyfill": "^0.3.1",
 		"apollo-server-micro": "^3.1.2",
 		"clsx": "^1.1.1",

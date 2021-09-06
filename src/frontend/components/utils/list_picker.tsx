@@ -4,13 +4,13 @@ import {
 	TextField,
 	TextFieldProps
 } from "@material-ui/core";
-import { Autocomplete } from "@material-ui/lab";
 import {
 	KeyboardArrowDown as KeyboardArrowDownIcon,
 	KeyboardArrowUp as KeyboardArrowUpIcon
 } from "@material-ui/icons";
 import clsx from "clsx";
 import React from "react";
+import { useUniqueId } from "../../hooks";
 
 const useStyles = makeStyles((theme) => ({
 	form: {
@@ -35,7 +35,7 @@ export interface ListPickerClassesProp {
 
 export interface ListPickerProps {
 	value: string;
-	tryUpdateValue?: (newValue: string) => void;
+	tryUpdateValue?: (newValue: string, showErrors: boolean) => void;
 	onValueUp?: () => void;
 	onValueDown?: () => void;
 	disableUp?: boolean;
@@ -52,6 +52,7 @@ export interface ListPickerProps {
 	autoComplete?: string;
 	suggestions?: string[];
 	autoSelect?: boolean;
+	live?: boolean;
 }
 
 const ListPicker = ({
@@ -72,10 +73,12 @@ const ListPicker = ({
 	placeholder,
 	autoComplete,
 	suggestions = [],
-	autoSelect = false
+	autoSelect = false,
+	live = false
 }: ListPickerProps) => {
 	const classes = useStyles();
 	const [value, setValue] = React.useState<string>(startValue);
+	const suggestionsListId = useUniqueId("list-picker-suggestions");
 
 	React.useEffect(() => {
 		setValue(startValue);
@@ -85,14 +88,14 @@ const ListPicker = ({
 		(evt: React.KeyboardEvent<HTMLInputElement>) => {
 			if (evt.key === "Enter") {
 				evt.preventDefault();
-				tryUpdateValue?.(value);
+				tryUpdateValue?.(value, true);
 			}
 		},
 		[tryUpdateValue, value]
 	);
 
 	const onBlur = React.useCallback(
-		() => tryUpdateValue?.(value),
+		() => tryUpdateValue?.(value, true),
 		[tryUpdateValue, value]
 	);
 
@@ -106,32 +109,14 @@ const ListPicker = ({
 
 	const onChange = React.useCallback(
 		(evt: React.ChangeEvent<HTMLInputElement>) => {
-			if (!validValues || validValues.test(evt.target.value))
+			if (!validValues || validValues.test(evt.target.value)) {
 				setValue(evt.target.value);
+				if (live && evt.target.validity.valid)
+					tryUpdateValue?.(evt.target.value, false);
+			}
 		},
-		[validValues]
+		[live, tryUpdateValue, validValues]
 	);
-
-	const Input = React.forwardRef((params: Partial<TextFieldProps>) => (
-		<TextField
-			variant="outlined"
-			value={value}
-			className={clsx(classes.textField, classesProp.textField)}
-			onChange={onChange}
-			onKeyPress={onKeyPress}
-			onFocus={onFocus}
-			onBlur={onBlur}
-			error={error}
-			label={label}
-			helperText={error && errorText}
-			size={size}
-			placeholder={placeholder}
-			autoComplete={autoComplete}
-			{...textFieldProps}
-		/>
-	));
-
-	Input.displayName = "ListPickerInput";
 
 	return (
 		<div className={clsx(classes.container, className)}>
@@ -143,23 +128,28 @@ const ListPicker = ({
 				<KeyboardArrowUpIcon />
 			</IconButton>
 			<form className={classes.form} onSubmit={(evt) => console.log(evt)}>
-				{/* {suggestions.length == 0 ? ( */}
-				<Input />
-				{/* ) : (
-					<Autocomplete
-						options={suggestions}
-						style={{ width: "100%" }}
-						renderInput={(params) => (
-							<Input
-								InputProps={{
-									ref: params.InputProps.ref,
-									inputProps: params.inputProps
-								}}
-							/>
-						)}
-						freeSolo
-					/>
-				)} */}
+				<datalist id={suggestionsListId}>
+					{suggestions.map((suggestion, i) => (
+						<option value={suggestion} key={i} />
+					))}
+				</datalist>
+				<TextField
+					variant="outlined"
+					value={value}
+					className={clsx(classes.textField, classesProp.textField)}
+					onChange={onChange}
+					onKeyPress={onKeyPress}
+					onFocus={onFocus}
+					onBlur={onBlur}
+					error={error}
+					label={label}
+					helperText={error && errorText}
+					size={size}
+					placeholder={placeholder}
+					autoComplete={autoComplete}
+					{...textFieldProps}
+					InputProps={{ inputProps: { list: suggestionsListId } }}
+				/>
 			</form>
 			<IconButton
 				className={classesProp.buttons}
