@@ -95,7 +95,8 @@ const useStyles = makeStyles((theme) => ({
 		maxHeight: `calc(100% - ${2 * theme.spacing(8)}px)`
 	},
 	input: {
-		marginTop: theme.spacing(5)
+		marginTop: theme.spacing(5),
+		width: "100%"
 	},
 	buttonSection: {
 		marginTop: theme.spacing(8)

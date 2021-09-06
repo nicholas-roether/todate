@@ -32,4 +32,18 @@ function useOngoingTouchesRef(): [
 	return [touchesRef, onTouchStart, onTouchEnd];
 }
 
-export { usePrev, useOngoingTouchesRef };
+let idCounter = 0;
+
+function getUniqueId() {
+	return idCounter++;
+}
+
+function useUniqueId(prefix?: string) {
+	const id = React.useMemo(
+		() => `useUniqueId-${prefix ? `${prefix}-` : ""}${getUniqueId()}`,
+		[prefix]
+	);
+	return id;
+}
+
+export { usePrev, useOngoingTouchesRef, useUniqueId };

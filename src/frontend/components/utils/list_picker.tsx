@@ -4,22 +4,27 @@ import {
 	TextField,
 	TextFieldProps
 } from "@material-ui/core";
+import { Autocomplete } from "@material-ui/lab";
 import {
 	KeyboardArrowDown as KeyboardArrowDownIcon,
 	KeyboardArrowUp as KeyboardArrowUpIcon
 } from "@material-ui/icons";
 import clsx from "clsx";
 import React from "react";
-import { useEffect } from "react";
 
 const useStyles = makeStyles((theme) => ({
+	form: {
+		width: "100%"
+	},
 	container: {
 		display: "inline-flex",
 		flexDirection: "column",
-		alignItems: "center"
+		alignItems: "center",
+		width: "100%"
 	},
 	textField: {
-		margin: theme.spacing(1, 0)
+		margin: theme.spacing(1, 0),
+		width: "100%"
 	}
 }));
 
@@ -44,7 +49,9 @@ export interface ListPickerProps {
 	className?: string;
 	classes?: ListPickerClassesProp;
 	placeholder?: string;
-	autoComplete?: string[];
+	autoComplete?: string;
+	suggestions?: string[];
+	autoSelect?: boolean;
 }
 
 const ListPicker = ({
@@ -63,12 +70,14 @@ const ListPicker = ({
 	className,
 	classes: classesProp = {},
 	placeholder,
-	autoComplete
+	autoComplete,
+	suggestions = [],
+	autoSelect = false
 }: ListPickerProps) => {
 	const classes = useStyles();
 	const [value, setValue] = React.useState<string>(startValue);
 
-	useEffect(() => {
+	React.useEffect(() => {
 		setValue(startValue);
 	}, [startValue]);
 
@@ -87,6 +96,14 @@ const ListPicker = ({
 		[tryUpdateValue, value]
 	);
 
+	const onFocus = React.useCallback(
+		(evt: React.FocusEvent<HTMLInputElement>) => {
+			if (!autoSelect) return;
+			evt.target.setSelectionRange(0, evt.target.value.length);
+		},
+		[autoSelect]
+	);
+
 	const onChange = React.useCallback(
 		(evt: React.ChangeEvent<HTMLInputElement>) => {
 			if (!validValues || validValues.test(evt.target.value))
@@ -94,6 +111,27 @@ const ListPicker = ({
 		},
 		[validValues]
 	);
+
+	const Input = React.forwardRef((params: Partial<TextFieldProps>) => (
+		<TextField
+			variant="outlined"
+			value={value}
+			className={clsx(classes.textField, classesProp.textField)}
+			onChange={onChange}
+			onKeyPress={onKeyPress}
+			onFocus={onFocus}
+			onBlur={onBlur}
+			error={error}
+			label={label}
+			helperText={error && errorText}
+			size={size}
+			placeholder={placeholder}
+			autoComplete={autoComplete}
+			{...textFieldProps}
+		/>
+	));
+
+	Input.displayName = "ListPickerInput";
 
 	return (
 		<div className={clsx(classes.container, className)}>
@@ -104,22 +142,24 @@ const ListPicker = ({
 			>
 				<KeyboardArrowUpIcon />
 			</IconButton>
-			<form onSubmit={(evt) => console.log(evt)}>
-				<TextField
-					variant="outlined"
-					value={value}
-					className={clsx(classes.textField, classesProp.textField)}
-					onChange={onChange}
-					onKeyPress={onKeyPress}
-					onBlur={onBlur}
-					error={error}
-					label={label}
-					helperText={error && errorText}
-					size={size}
-					placeholder={placeholder}
-					autoComplete={autoComplete?.join(" ")}
-					{...textFieldProps}
-				/>
+			<form className={classes.form} onSubmit={(evt) => console.log(evt)}>
+				{/* {suggestions.length == 0 ? ( */}
+				<Input />
+				{/* ) : (
+					<Autocomplete
+						options={suggestions}
+						style={{ width: "100%" }}
+						renderInput={(params) => (
+							<Input
+								InputProps={{
+									ref: params.InputProps.ref,
+									inputProps: params.inputProps
+								}}
+							/>
+						)}
+						freeSolo
+					/>
+				)} */}
 			</form>
 			<IconButton
 				className={classesProp.buttons}

@@ -110,7 +110,8 @@ const MonthPicker = ({
 			className={className}
 			classes={classesProp}
 			placeholder={placeholder}
-			autoComplete={longMonthNames}
+			suggestions={longMonthNames}
+			autoSelect
 		/>
 	);
 };
