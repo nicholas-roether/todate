@@ -125,14 +125,14 @@ export interface CalendarSidebarDesktopProps {
 	onUpdatePage: (pageDiff: number) => void;
 }
 
+// TODO redo layout of buttons & inputs to respond to vertical resizing
+
 const CalendarSidebarDesktop = ({
 	startDate,
 	page,
 	onUpdatePage
 }: CalendarSidebarDesktopProps) => {
 	const [open, setOpen] = React.useState(true);
-	// const [year, setYear] = React.useState(startDate.getFullYear());
-	// const [month, setMonth] = React.useState(startDate.getMonth());
 	const date = new Date(startDate);
 	date.setMonth(startDate.getMonth() + page);
 	const year = date.getFullYear();
