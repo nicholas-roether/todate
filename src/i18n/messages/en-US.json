@@ -1,5 +1,6 @@
 {
 	"clock": "Today is {today, date, ::eeeeeyyyyMMdd}{br}{today, date, ::hhmm}",
 	"year": "Year",
-	"month": "Month"
+	"month": "Month",
+	"backToToday": "Back to today"
 }

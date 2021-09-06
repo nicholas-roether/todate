@@ -1,5 +1,6 @@
 {
 	"clock": "今日は{today, date, ::yyyyMMddeeeee}{br}{today, date, ::HHmm}",
 	"year": "年",
-	"month": "月"
+	"month": "月",
+	"backToToday": "今日に戻る"
 }

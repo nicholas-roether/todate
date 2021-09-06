@@ -1,15 +1,23 @@
 import {
+	Button,
 	Collapse,
 	Drawer,
+	Fab,
 	Fade,
 	IconButton,
-	makeStyles
+	makeStyles,
+	Slide,
+	Theme,
+	useTheme
 } from "@material-ui/core";
-import { ArrowForward as ArrowForwardIcon } from "@material-ui/icons";
+import {
+	ArrowForward as ArrowForwardIcon,
+	Today as TodayIcon
+} from "@material-ui/icons";
 import clsx from "clsx";
 import React from "react";
 import { useCallback } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import Clock from "../clock";
 import MonthPicker from "../utils/month_picker";
 import Rotate180 from "../utils/rotate180";
@@ -56,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
 		}),
 		flex: 1,
 		padding: theme.spacing(0, 2),
-		overflowX: "hidden",
+		overflow: "hidden",
 		display: "flex",
 		flexDirection: "column"
 	},
@@ -88,6 +96,25 @@ const useStyles = makeStyles((theme) => ({
 	},
 	input: {
 		marginTop: theme.spacing(5)
+	},
+	buttonSection: {
+		marginTop: theme.spacing(8)
+	},
+	buttonOverlayRoot: {
+		position: "relative",
+		width: "100%"
+	},
+	buttonOverlayRootOpen: {
+		minWidth: drawerWidth - theme.spacing(4)
+	},
+	buttonOverlayPage: {
+		position: "absolute",
+		width: "100%",
+		textAlign: "center",
+		zIndex: 0
+	},
+	buttonOverlayPageTop: {
+		zIndex: 1
 	}
 }));
 
@@ -110,6 +137,7 @@ const CalendarSidebarDesktop = ({
 	const year = date.getFullYear();
 	const month = date.getMonth();
 	const intl = useIntl();
+	const theme = useTheme<Theme>();
 	const classes = useStyles();
 
 	const onYearChange = useCallback(
@@ -125,6 +153,10 @@ const CalendarSidebarDesktop = ({
 		},
 		[month, onUpdatePage]
 	);
+
+	const onBackToToday = useCallback(() => {
+		onUpdatePage?.(-page);
+	}, [onUpdatePage, page]);
 
 	return (
 		<Drawer
@@ -185,6 +217,61 @@ const CalendarSidebarDesktop = ({
 								textField: classes.listPickerTextField
 							}}
 						/>
+					</div>
+					<div
+						className={clsx(
+							classes.buttonSection,
+							classes.buttonOverlayRoot,
+							{ [classes.buttonOverlayRootOpen]: open }
+						)}
+					>
+						<div
+							className={clsx(classes.buttonOverlayPage, {
+								[classes.buttonOverlayPageTop]: open
+							})}
+						>
+							<Fade
+								in={open}
+								exit={false}
+								timeout={
+									theme.transitions.duration.enteringScreen
+								}
+							>
+								<Button
+									onClick={onBackToToday}
+									startIcon={<TodayIcon />}
+									variant="contained"
+									color="secondary"
+									disabled={page == 0}
+								>
+									<FormattedMessage
+										id="backToToday"
+										defaultMessage="Back to today"
+									/>
+								</Button>
+							</Fade>
+						</div>
+						<div
+							className={clsx(classes.buttonOverlayPage, {
+								[classes.buttonOverlayPageTop]: !open
+							})}
+						>
+							<Fade
+								in={!open}
+								exit={false}
+								timeout={
+									theme.transitions.duration.enteringScreen
+								}
+							>
+								<Fab
+									onClick={onBackToToday}
+									color="secondary"
+									disabled={page == 0}
+								>
+									<TodayIcon />
+								</Fab>
+							</Fade>
+						</div>
 					</div>
 				</div>
 			</main>
