@@ -32,19 +32,4 @@ function useOngoingTouchesRef(): [
 	return [touchesRef, onTouchStart, onTouchEnd];
 }
 
-// FIXME ensure id synchronosity between client and server
-let idCounter = 0;
-
-function getUniqueId() {
-	return idCounter++;
-}
-
-function useUniqueId(prefix?: string) {
-	const id = React.useMemo(
-		() => `useUniqueId-${prefix ? `${prefix}-` : ""}${getUniqueId()}`,
-		[prefix]
-	);
-	return id;
-}
-
-export { usePrev, useOngoingTouchesRef, useUniqueId };
+export { usePrev, useOngoingTouchesRef };

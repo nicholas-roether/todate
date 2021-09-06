@@ -9,8 +9,8 @@ import {
 	KeyboardArrowUp as KeyboardArrowUpIcon
 } from "@material-ui/icons";
 import clsx from "clsx";
+import Hashids from "hashids";
 import React from "react";
-import { useUniqueId } from "../../hooks";
 
 const useStyles = makeStyles((theme) => ({
 	form: {
@@ -78,7 +78,15 @@ const ListPicker = ({
 }: ListPickerProps) => {
 	const classes = useStyles();
 	const [value, setValue] = React.useState<string>(startValue);
-	const suggestionsListId = useUniqueId("list-picker-suggestions");
+	const suggestionsListId = React.useMemo(() => {
+		const hashids = new Hashids();
+		return `list-picker-suggestions-${hashids.encode(
+			suggestions
+				.join(";")
+				.split("")
+				.map((char) => char.charCodeAt(0))
+		)}`;
+	}, [suggestions]);
 
 	React.useEffect(() => {
 		setValue(startValue);
