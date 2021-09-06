@@ -5,9 +5,6 @@ import { EventHandler } from "react";
 import { useIntl } from "react-intl";
 
 const useStyles = makeStyles((theme) => ({
-	dayText: {
-		fontSize: theme.typography.h5.fontSize
-	},
 	main: {
 		marginTop: theme.spacing(1)
 	},
@@ -68,7 +65,7 @@ const CalendarViewTile = ({
 			onClick={onClick}
 		>
 			<CardContent>
-				<Typography className={classes.dayText}>{dayText}</Typography>
+				<Typography variant="h5">{dayText}</Typography>
 				<main className={classes.main}>{children}</main>
 			</CardContent>
 		</Card>
