@@ -136,6 +136,7 @@ const ListPicker = ({
 				className={classesProp.buttons}
 				onClick={onValueUp}
 				disabled={disableUp}
+				size="small"
 			>
 				<KeyboardArrowUpIcon />
 			</IconButton>
@@ -167,6 +168,7 @@ const ListPicker = ({
 				className={classesProp.buttons}
 				onClick={onValueDown}
 				disabled={disableDown}
+				size="small"
 			>
 				<KeyboardArrowDownIcon />
 			</IconButton>

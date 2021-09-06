@@ -84,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
 			textAlign: "center"
 		}
 	},
-	inputSection: {
+	controls: {
 		transition: theme.transitions.create(["padding"], {
 			easing: theme.transitions.easing.easeIn,
 			duration: theme.transitions.duration.leavingScreen
@@ -93,14 +93,15 @@ const useStyles = makeStyles((theme) => ({
 		flexDirection: "column",
 		justifyContent: "space-around",
 		alignItems: "center",
-		maxHeight: `calc(100% - ${2 * theme.spacing(8)}px)`
+		maxHeight: `calc(100% - ${2 * theme.spacing(8)}px)`,
+		overflowY: "auto",
+		overflowX: "hidden",
+		flex: 1
 	},
 	input: {
-		marginTop: theme.spacing(5),
 		width: "100%"
 	},
 	buttonSection: {
-		marginTop: theme.spacing(8),
 		textAlign: "center"
 	},
 	buttonSectionOpen: {
@@ -113,8 +114,6 @@ export interface CalendarSidebarDesktopProps {
 	page: number;
 	onUpdatePage: (pageDiff: number) => void;
 }
-
-// TODO redo layout of buttons & inputs to respond to vertical resizing
 
 const CalendarSidebarDesktop = ({
 	startDate,
@@ -185,7 +184,7 @@ const CalendarSidebarDesktop = ({
 						</Collapse>
 					</div>
 				</Fade>
-				<div className={classes.inputSection}>
+				<div className={classes.controls}>
 					<div className={classes.input}>
 						<YearPicker
 							year={year}
