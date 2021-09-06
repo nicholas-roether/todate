@@ -4,6 +4,7 @@ import {
 	Drawer,
 	Fab,
 	Fade,
+	Hidden,
 	IconButton,
 	makeStyles,
 	Slide,
@@ -99,23 +100,11 @@ const useStyles = makeStyles((theme) => ({
 		width: "100%"
 	},
 	buttonSection: {
-		marginTop: theme.spacing(8)
+		marginTop: theme.spacing(8),
+		textAlign: "center"
 	},
-	buttonOverlayRoot: {
-		position: "relative",
-		width: "100%"
-	},
-	buttonOverlayRootOpen: {
+	buttonSectionOpen: {
 		minWidth: drawerWidth - theme.spacing(4)
-	},
-	buttonOverlayPage: {
-		position: "absolute",
-		width: "100%",
-		textAlign: "center",
-		zIndex: 0
-	},
-	buttonOverlayPageTop: {
-		zIndex: 1
 	}
 }));
 
@@ -220,63 +209,37 @@ const CalendarSidebarDesktop = ({
 						/>
 					</div>
 					<div
-						className={clsx(
-							classes.buttonSection,
-							classes.buttonOverlayRoot,
-							{ [classes.buttonOverlayRootOpen]: open }
-						)}
+						className={clsx(classes.buttonSection, {
+							[classes.buttonSectionOpen]: open
+						})}
 					>
-						<div
-							className={clsx(classes.buttonOverlayPage, {
-								[classes.buttonOverlayPageTop]: open
-							})}
-						>
-							<Fade
-								in={open}
-								exit={false}
-								timeout={
-									theme.transitions.duration.enteringScreen
-								}
-							>
-								<span>
-									<Button
-										onClick={onBackToToday}
-										startIcon={<TodayIcon />}
-										variant="contained"
-										color="secondary"
-										disabled={page == 0}
-									>
-										<FormattedMessage
-											id="backToToday"
-											defaultMessage="Back to today"
-										/>
-									</Button>
-								</span>
-							</Fade>
-						</div>
-						<div
-							className={clsx(classes.buttonOverlayPage, {
-								[classes.buttonOverlayPageTop]: !open
-							})}
-						>
-							<Fade
-								in={!open}
-								exit={false}
-								timeout={
-									theme.transitions.duration.enteringScreen
-								}
-							>
-								<span>
-									<Fab
-										onClick={onBackToToday}
-										color="secondary"
-										disabled={page == 0}
-									>
-										<TodayIcon />
-									</Fab>
-								</span>
-							</Fade>
-						</div>
+						<Hidden xsUp={!open}>
+							<span>
+								<Button
+									onClick={onBackToToday}
+									startIcon={<TodayIcon />}
+									variant="contained"
+									color="secondary"
+									disabled={page == 0}
+								>
+									<FormattedMessage
+										id="backToToday"
+										defaultMessage="Back to today"
+									/>
+								</Button>
+							</span>
+						</Hidden>
+						<Hidden xsUp={open}>
+							<span>
+								<Fab
+									onClick={onBackToToday}
+									color="secondary"
+									disabled={page == 0}
+								>
+									<TodayIcon />
+								</Fab>
+							</span>
+						</Hidden>
 					</div>
 				</div>
 			</main>
