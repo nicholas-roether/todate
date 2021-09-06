@@ -33,7 +33,13 @@ const MonthPicker = ({
 	placeholder
 }: MonthPickerProps) => {
 	const [error, setError] = React.useState<string | null>(null);
+	// To force refresh when reselecting the same value
+	const [dummy, setDummy] = React.useState(false);
 	const intl = useIntl();
+
+	function refresh() {
+		setDummy((dummy) => !dummy);
+	}
 
 	const [longMonthNames, shortMonthNames] = React.useMemo(() => {
 		const date = new Date(0);
@@ -70,6 +76,7 @@ const MonthPicker = ({
 					monthNum = longMonthNames.indexOf(monthString);
 				else if (parsed != NaN) monthNum = parsed - 1;
 				onMonthChange?.(monthNum);
+				refresh();
 			}
 		},
 		[longMonthNames, onMonthChange, shortMonthNames, validMonths]
@@ -80,10 +87,7 @@ const MonthPicker = ({
 		[month, onMonthChange]
 	);
 
-	console.log(month);
-
 	const onValueDown = React.useCallback(() => {
-		console.log(month);
 		onMonthChange?.(month + 1);
 	}, [month, onMonthChange]);
 
@@ -113,7 +117,7 @@ const MonthPicker = ({
 			placeholder={placeholder}
 			suggestions={longMonthNames}
 			autoSelect
-			live
+			key={Number(dummy)}
 		/>
 	);
 };

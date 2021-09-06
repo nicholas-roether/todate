@@ -111,11 +111,15 @@ const ListPicker = ({
 		(evt: React.ChangeEvent<HTMLInputElement>) => {
 			if (!validValues || validValues.test(evt.target.value)) {
 				setValue(evt.target.value);
-				if (live && evt.target.validity.valid)
+				if (
+					(live ||
+						Math.abs(evt.target.value.length - value.length) > 1) &&
+					evt.target.validity.valid
+				)
 					tryUpdateValue?.(evt.target.value, false);
 			}
 		},
-		[live, tryUpdateValue, validValues]
+		[live, tryUpdateValue, validValues, value.length]
 	);
 
 	return (
@@ -127,7 +131,7 @@ const ListPicker = ({
 			>
 				<KeyboardArrowUpIcon />
 			</IconButton>
-			<form className={classes.form} onSubmit={(evt) => console.log(evt)}>
+			<form className={classes.form}>
 				<datalist id={suggestionsListId}>
 					{suggestions.map((suggestion, i) => (
 						<option value={suggestion} key={i} />
