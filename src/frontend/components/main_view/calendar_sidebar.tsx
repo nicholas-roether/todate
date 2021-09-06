@@ -238,18 +238,20 @@ const CalendarSidebarDesktop = ({
 									theme.transitions.duration.enteringScreen
 								}
 							>
-								<Button
-									onClick={onBackToToday}
-									startIcon={<TodayIcon />}
-									variant="contained"
-									color="secondary"
-									disabled={page == 0}
-								>
-									<FormattedMessage
-										id="backToToday"
-										defaultMessage="Back to today"
-									/>
-								</Button>
+								<span>
+									<Button
+										onClick={onBackToToday}
+										startIcon={<TodayIcon />}
+										variant="contained"
+										color="secondary"
+										disabled={page == 0}
+									>
+										<FormattedMessage
+											id="backToToday"
+											defaultMessage="Back to today"
+										/>
+									</Button>
+								</span>
 							</Fade>
 						</div>
 						<div
@@ -264,13 +266,15 @@ const CalendarSidebarDesktop = ({
 									theme.transitions.duration.enteringScreen
 								}
 							>
-								<Fab
-									onClick={onBackToToday}
-									color="secondary"
-									disabled={page == 0}
-								>
-									<TodayIcon />
-								</Fab>
+								<span>
+									<Fab
+										onClick={onBackToToday}
+										color="secondary"
+										disabled={page == 0}
+									>
+										<TodayIcon />
+									</Fab>
+								</span>
 							</Fade>
 						</div>
 					</div>
