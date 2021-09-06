@@ -1,10 +1,10 @@
 module.exports = {
 	reactStrictMode: true,
 	i18n: {
-		locales: ["en-US"],
-		defaultLocale: "en-US"
+		locales: ["en", "de", "ja"],
+		defaultLocale: "en"
 	},
-	webpack: config => {
+	webpack: (config) => {
 		config.module.rules.push({
 			test: /\.graphql$/,
 			include: /src/,
@@ -13,4 +13,4 @@ module.exports = {
 		});
 		return config;
 	}
-}
+};

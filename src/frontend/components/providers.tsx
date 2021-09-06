@@ -5,15 +5,12 @@ import React from "react";
 import apolloClient from "../apollo_client";
 import defaultTheme from "../themes/default";
 import IntlManager from "./managers/intl_manager";
-import LocaleManager from "./managers/locale_manager";
 
 const Providers = ({ children }: React.PropsWithChildren<{}>) => (
 	<UserProvider>
 		<ApolloProvider client={apolloClient}>
 			<ThemeProvider theme={defaultTheme}>
-				<LocaleManager>
-					<IntlManager>{children}</IntlManager>
-				</LocaleManager>
+				<IntlManager>{children}</IntlManager>
 			</ThemeProvider>
 		</ApolloProvider>
 	</UserProvider>

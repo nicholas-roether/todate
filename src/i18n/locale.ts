@@ -1,5 +1,5 @@
 export enum Locale {
-	ENGLISH = "en-US",
-	GERMAN = "de-DE",
-	JAPANESE = "ja-JP"
+	ENGLISH = "en",
+	GERMAN = "de",
+	JAPANESE = "ja"
 }

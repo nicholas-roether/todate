@@ -190,7 +190,7 @@ const CalendarSidebarDesktop = ({
 						<YearPicker
 							year={year}
 							onYearChange={onYearChange}
-							label={intl.messages.year.toString()}
+							label={intl.formatMessage({ id: "year" })}
 							size={open ? "medium" : "small"}
 							classes={{
 								textField: classes.listPickerTextField

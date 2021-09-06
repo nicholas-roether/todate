@@ -1,11 +1,12 @@
+import { useRouter } from "next/dist/client/router";
 import React from "react";
 import { IntlProvider } from "react-intl";
 import { Locale } from "../../../i18n/locale";
 import { messages } from "../../../i18n/messages";
-import { useLocale } from "./locale_manager";
 
 const IntlManager = ({ children }: React.PropsWithChildren<{}>) => {
-	const locale = useLocale();
+	const router = useRouter();
+	const locale = (router.locale ?? "en-US") as Locale;
 	return (
 		<IntlProvider
 			defaultLocale={Locale.ENGLISH}
