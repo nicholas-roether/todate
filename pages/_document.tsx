@@ -10,8 +10,7 @@ class MyDocument extends Document {
 
 	render() {
 		return (
-			// TODO dynamically change language
-			<Html lang="en">
+			<Html>
 				<Head>
 					{/* TODO: PWA & metadata */}
 					<link
