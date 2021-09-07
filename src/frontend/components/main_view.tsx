@@ -1,9 +1,7 @@
-import { Box, Drawer, makeStyles, Paper } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import React from "react";
 import CalendarView from "./main_view/calendar_view";
-import Clock from "./clock";
-import ResizableContainer from "./resizable_container";
-import CalendarSidebarDesktop from "./main_view/calendar_sidebar";
+import CalendarSidebar from "./main_view/calendar_sidebar";
 
 const useStyles = makeStyles(() => ({
 	container: {
@@ -53,7 +51,7 @@ const MainView = ({ startDate, page, onUpdatePage }: MainViewProps) => {
 					onUpdatePage={onUpdatePage}
 				/>
 			</div> */}
-			<CalendarSidebarDesktop
+			<CalendarSidebar
 				startDate={startDate}
 				page={page}
 				onUpdatePage={onUpdatePage}

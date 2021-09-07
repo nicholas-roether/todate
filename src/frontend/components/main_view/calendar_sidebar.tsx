@@ -109,17 +109,17 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-export interface CalendarSidebarDesktopProps {
+export interface CalendarSidebarProps {
 	startDate: Date;
 	page: number;
 	onUpdatePage: (pageDiff: number) => void;
 }
 
-const CalendarSidebarDesktop = ({
+const CalendarSidebar = ({
 	startDate,
 	page,
 	onUpdatePage
-}: CalendarSidebarDesktopProps) => {
+}: CalendarSidebarProps) => {
 	const [open, setOpen] = React.useState(true);
 	const date = new Date(startDate);
 	date.setMonth(startDate.getMonth() + page);
@@ -246,4 +246,4 @@ const CalendarSidebarDesktop = ({
 	);
 };
 
-export default CalendarSidebarDesktop;
+export default CalendarSidebar;
